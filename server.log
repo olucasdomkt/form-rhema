@@ -1,0 +1,304 @@
+=================================
+Servidor rodando em http://127.0.0.1:4000
+Rotas disponíveis:
+- GET /
+- GET /lead?email=...
+=================================
+Nova requisição: {
+  method: 'GET',
+  url: '/',
+  headers: { host: '127.0.0.1:4000', 'user-agent': 'curl/8.7.1', accept: '*/*' }
+}
+Nova requisição: {
+  method: 'GET',
+  url: '/lead?email=lucasbarbosalacerda%40gmail.com',
+  headers: {
+    host: '127.0.0.1:4000',
+    connection: 'keep-alive',
+    'sec-ch-ua-platform': '"macOS"',
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+    'content-type': 'application/json',
+    'sec-ch-ua-mobile': '?0',
+    accept: '*/*',
+    origin: 'http://localhost:3001',
+    'sec-fetch-site': 'cross-site',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-dest': 'empty',
+    referer: 'http://localhost:3001/',
+    'accept-encoding': 'gzip, deflate, br, zstd',
+    'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,es;q=0.6'
+  }
+}
+Buscando lead com email: lucasbarbosalacerda@gmail.com
+Gerando token OAuth...
+Erro detalhado: {
+  message: 'Request failed with status code 500',
+  response: '<!DOCTYPE html>\n' +
+    '<html>\n' +
+    '  <head>\n' +
+    '    <meta charset="utf-8" />\n' +
+    '    <title>  500 - Erro interno no servidor\n' +
+    '</title>\n' +
+    '    <link rel="stylesheet" href="https://d3ndvx6e67vt0s.cloudfront.net/assets/application-a2804a1dd2217ea6db72c739b223ca9d4047a4a3166ba0c486250e9a521db56e.css" media="screen" />\n' +
+    '    <link rel="stylesheet" href="https://d3ndvx6e67vt0s.cloudfront.net/assets/error_pages-941ddda18bf83f3c67c0ba074beb5489a2d94f323b46409d1eb0d7d1a8ae9951.css" media="screen" />\n' +
+    '    <script nonce="QaTvq7+4kVKfZyzEnpg1bKeFu1Cu4r+0VpzUs52lNoA=">\n' +
+    '  ACCOUNT_LOCALE = "pt-BR";\n' +
+    `  LOCALE_MAP = JSON.parse('{"pt-BR":"pt_BR","en-US":"pt_BR","es-ES":"pt_BR"}');\n` +
+    `  LOCALE_INFO = JSON.parse('[{"locale":"pt-BR","name":"Português"},{"locale":"en-US","name":"English"},{"locale":"es-ES","name":"Español"}]');\n` +
+    '</script><script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n-bb5fba09c52eb6976f94dd79a240d735847bea9941a186a612ee2871cc02275f.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/locale-fbdefee35edc134468e527c9fd1b3eb2f6b5f6280ddda22b0493c65658761d61.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/frontend-global-a48418066f096a0410010a904c1d98f3d0246f1e11ce39706c6aac7ce4279a53.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/frontend-pt-BR-2fbc75a4c8c74171f2c0024f5b3f3ca839be93516f2bbf1de2b9287cd8b3c601.js" cache="true"></script>\n' +
+    '\n' +
+    '  </head>\n' +
+    '\n' +
+    '  <body>\n' +
+    '    <div class="text-center">\n' +
+    '      <a href="/home" title="Início" class="brand">\n' +
+    '        <svg width="113" height="26" viewBox="0 0 113 26" fill="none" xmlns="http://www.w3.org/2000/svg">\n' +
+    '<g clip-path="url(#clip0)">\n' +
+    '<path d="M32.9189 15.8685H34.9293L36.7753 19.8877H36.9396L38.7856 15.8685H40.796V22.6683H39.519V18.3078L39.6201 17.3473H39.519L37.7868 21.0758H35.9408L34.2085 17.3473H34.0948L34.2085 18.3078V22.6683H32.9189V15.8685Z" fill="#212429"/>\n' +
+    '<path d="M43.8808 15.7169H46.9911L48.9257 22.6683H47.6107L47.1556 20.9873H43.7291L43.2739 22.6683H41.959L43.8808 15.7169ZM46.8015 19.7108L46.0555 16.9934H44.8038L44.0578 19.7108H46.8015Z" fill="#212429"/>\n' +
+    '<path d="M49.8867 15.7169H53.2627C54.8684 15.7169 55.9432 16.8291 55.9432 18.0298C55.9432 18.8134 55.5385 19.3443 55.1466 19.6855C54.9063 19.8877 54.6408 20.0394 54.35 20.1658L55.8926 22.6556H54.35L52.9212 20.3427H51.2018V22.6556H49.8867V15.7169ZM53.2627 19.0788C54.1351 19.0788 54.5776 18.6238 54.5776 18.0425C54.5776 17.4611 54.1351 17.0061 53.2627 17.0061H51.2018V19.0915H53.2627V19.0788Z" fill="#212429"/>\n' +
+    '<path d="M57.2581 15.7169H58.573V18.4975H59.888L61.7719 15.7169H63.2512L60.9753 19.0788L63.4282 22.6683H61.8857L59.9385 19.774H58.573V22.6683H57.2581V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M64.2881 15.7169H69.4214V16.9934H65.6029V18.4975H68.7386V19.774H65.6029V21.3918H69.4214V22.6683H64.2881V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M69.9397 15.7169H76.1604V16.9934H73.7076V22.6683H72.3926V16.9934H69.9397V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M78.3984 15.7169H77.0835V22.6683H78.3984V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M79.9915 15.7169H81.7619L84.9095 20.9241H85.0241L84.9095 20.0015V15.7169H86.225V22.6683H84.4423L81.3061 17.4484H81.1927L81.3061 18.3837V22.6683H79.9915V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M91.308 15.4894C92.7615 15.4894 93.6594 16.1213 94.2029 16.766C94.5068 17.1325 94.7465 17.5622 94.9114 18.0425H93.596C93.47 17.777 93.3051 17.5495 93.1028 17.3473C92.7494 16.9935 92.1798 16.6522 91.308 16.6522C89.9422 16.6522 88.855 17.7644 88.855 19.1927C88.855 20.6208 89.9422 21.733 91.308 21.733C92.218 21.733 92.7997 21.3286 93.154 20.9242C93.3563 20.684 93.5204 20.4186 93.6472 20.1152H92.5089V18.8387H95.9352V20.1152H94.9618C94.7847 20.6335 94.5442 21.1011 94.2411 21.5055C93.7097 22.2133 92.7867 22.8958 91.308 22.8958C89.1329 22.8958 87.4771 21.2149 87.4771 19.1927C87.4771 17.1704 89.1329 15.4894 91.308 15.4894Z" fill="#212429"/>\n' +
+    '<path d="M57.473 9.70076C57.5488 9.9662 57.6752 10.2063 57.8648 10.4085C58.2062 10.7625 58.75 11.1037 59.7489 11.1037C61.2155 11.1037 61.8098 10.5097 61.8098 9.92826C61.8098 8.99299 60.381 8.76549 58.9396 8.46218C57.4982 8.1588 56.0694 7.55216 56.0694 5.88383C56.0694 4.48091 57.3212 3.24231 59.673 3.24231C61.3167 3.24231 62.2775 3.89953 62.8212 4.56939C63.15 4.9612 63.3649 5.40356 63.504 5.89648H61.7339C61.658 5.70689 61.5442 5.5173 61.3672 5.353C61.0764 5.07494 60.558 4.79688 59.673 4.79688C58.3327 4.79688 57.8396 5.23924 57.8396 5.82063C57.8396 6.47786 58.6488 6.79383 59.6476 6.99605C61.3419 7.3373 63.5799 7.74174 63.5799 9.86505C63.5799 11.3312 62.2649 12.6583 59.7489 12.6583C57.8776 12.6583 56.8407 11.9378 56.2718 11.1922C55.943 10.7625 55.7281 10.2695 55.627 9.72603H57.473V9.70076Z" fill="#212429"/>\n' +
+    '<path d="M64.0225 3.52032H72.0386V5.13811H68.8776V12.3549H67.1834V5.13811H64.0225V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M78.0697 8.60119L77.1088 5.15074H75.4904L74.5294 8.60119H78.0697ZM74.3018 3.52032H78.3099L80.8008 12.3423H79.1065L78.5122 10.2063H74.0996L73.5053 12.3423H71.811L74.3018 3.52032Z" fill="#212429"/>\n' +
+    '<path d="M80.573 3.52032H88.5892V5.13811H85.4278V12.3549H83.7337V5.13811H80.573V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M91.459 3.52032H89.7649V12.3423H91.459V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M98.0087 11.0279C99.8425 11.0279 101.17 9.70077 101.17 7.94399C101.17 6.17454 99.8425 4.86009 98.0087 4.86009C96.1757 4.86009 94.8481 6.18718 94.8481 7.94399C94.8481 9.70077 96.1757 11.0279 98.0087 11.0279ZM98.0087 3.22968C100.879 3.22968 102.94 5.28982 102.94 7.93134C102.94 10.5729 100.879 12.633 98.0087 12.633C95.1389 12.633 93.0776 10.5729 93.0776 7.93134C93.0776 5.28982 95.1389 3.22968 98.0087 3.22968Z" fill="#212429"/>\n' +
+    '<path d="M104.558 3.52032H106.834L110.88 10.1431H111.032L110.88 8.96771V3.52032H112.574V12.3549H110.298L106.252 5.73214H106.101L106.252 6.90756V12.3549H104.558V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M37.711 7.67857H35.7385V5.54259H37.711C38.3938 5.54259 38.9121 5.99759 38.9121 6.60426C38.9121 7.21093 38.4063 7.67857 37.711 7.67857ZM40.1513 9.32165C40.4421 9.18264 40.7202 8.9804 40.9604 8.71496C41.5168 8.14621 41.795 7.43843 41.795 6.6169C41.795 4.61995 40.2271 3.22968 37.9891 3.22968H32.9316V12.6457H35.7385V9.92827H37.4581L38.988 12.6457H41.8202L39.9868 9.39746L40.1513 9.32165Z" fill="#212429"/>\n' +
+    '<path d="M46.043 10.2569V5.61843H47.1051C48.5844 5.61843 49.4948 6.50316 49.4948 7.93134C49.4948 9.35952 48.5844 10.2442 47.1051 10.2442H46.043V10.2569ZM52.4407 7.93134C52.4407 5.20134 50.2281 3.22968 47.1809 3.22968H43.2361V12.6457H47.1809C50.2281 12.6457 52.4407 10.6614 52.4407 7.93134Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 18.8629L26.01 23.6751V19.3604L12.9999 14.5482L0 19.3604V23.6751L12.9999 18.8629Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 18.863L0 23.6751L4.82533 26L12.9999 22.9746L21.1846 26L26.01 23.6751L12.9999 18.863Z" fill="#19C1CE"/>\n' +
+    '<path d="M12.9999 7.13705L0 2.32483V6.63954L12.9999 11.4518L26.01 6.63954V2.32483L12.9999 7.13705Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 7.13708L26.01 2.32486L21.1846 0L12.9999 3.02541L4.82533 0L0 2.32486L12.9999 7.13708Z" fill="#19C1CE"/>\n' +
+    '</g>\n' +
+    '<defs>\n' +
+    '<clipPath id="clip0">\n' +
+    '<rect width="112.938" height="26" fill="white"/>\n' +
+    '</clipPath>\n' +
+    '</defs>\n' +
+    '</svg>\n' +
+    '\n' +
+    '      </a>\n' +
+    '    </div>\n' +
+    '\n' +
+    '    <div id="content-outside" class="container">\n' +
+    '      \n' +
+    '<section class="section-heading">\n' +
+    '  <img width="600" src="https://d3ndvx6e67vt0s.cloudfront.net/assets/error_page/img-500-6546ba76f97f2a8e86db32ddc6d53d155dbf27f84e79746975779e63eb5120a7.svg" />\n' +
+    '  <h1>Não repare na bagunça!</h1>\n' +
+    '</section>\n' +
+    '<section class="section-body">\n' +
+    '    <p>Problemas técnicos são sempre inesperados, mas estamos correndo para voltar a funcionar perfeitamente. Tente de novo em alguns minutos.</p>\n' +
+    '</section>\n' +
+    '      <section class="section-footer">\n' +
+    '          <a class="btn btn-links-outline" href="https://status.rdstation.com/">Consultar status do sistema</a>\n' +
+    '          <a class="btn btn-links" href="/home">Ir para o RD Station Marketing</a>\n' +
+    '      </section>\n' +
+    '      <p class="support">Isso não parece certo? Que tal <a href="/suporte/novo">reportar o erro</a>?</p>\n' +
+    '      <p class="reserved-rights">©RD Station | Todos os direitos reservados</p>\n' +
+    '    </div>\n' +
+    '  </body>\n' +
+    '</html>\n',
+  status: 500,
+  url: 'https://api.rd.services/auth/token'
+}
+Nova requisição: {
+  method: 'GET',
+  url: '/lead?email=lucasbarbosalacerda%40gmail.com',
+  headers: {
+    host: '127.0.0.1:4000',
+    connection: 'keep-alive',
+    'sec-ch-ua-platform': '"macOS"',
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+    'content-type': 'application/json',
+    'sec-ch-ua-mobile': '?0',
+    accept: '*/*',
+    origin: 'http://localhost:3001',
+    'sec-fetch-site': 'cross-site',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-dest': 'empty',
+    referer: 'http://localhost:3001/',
+    'accept-encoding': 'gzip, deflate, br, zstd',
+    'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,es;q=0.6'
+  }
+}
+Buscando lead com email: lucasbarbosalacerda@gmail.com
+Gerando token OAuth...
+Erro detalhado: {
+  message: 'Request failed with status code 500',
+  response: '<!DOCTYPE html>\n' +
+    '<html>\n' +
+    '  <head>\n' +
+    '    <meta charset="utf-8" />\n' +
+    '    <title>  500 - Erro interno no servidor\n' +
+    '</title>\n' +
+    '    <link rel="stylesheet" href="https://d3ndvx6e67vt0s.cloudfront.net/assets/application-a2804a1dd2217ea6db72c739b223ca9d4047a4a3166ba0c486250e9a521db56e.css" media="screen" />\n' +
+    '    <link rel="stylesheet" href="https://d3ndvx6e67vt0s.cloudfront.net/assets/error_pages-941ddda18bf83f3c67c0ba074beb5489a2d94f323b46409d1eb0d7d1a8ae9951.css" media="screen" />\n' +
+    '    <script nonce="s08v+X9utzjQtuJ8GW1GSsd/mO9+0oEOe6c/Ausq5mQ=">\n' +
+    '  ACCOUNT_LOCALE = "pt-BR";\n' +
+    `  LOCALE_MAP = JSON.parse('{"pt-BR":"pt_BR","en-US":"pt_BR","es-ES":"pt_BR"}');\n` +
+    `  LOCALE_INFO = JSON.parse('[{"locale":"pt-BR","name":"Português"},{"locale":"en-US","name":"English"},{"locale":"es-ES","name":"Español"}]');\n` +
+    '</script><script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n-bb5fba09c52eb6976f94dd79a240d735847bea9941a186a612ee2871cc02275f.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/locale-fbdefee35edc134468e527c9fd1b3eb2f6b5f6280ddda22b0493c65658761d61.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/frontend-global-a48418066f096a0410010a904c1d98f3d0246f1e11ce39706c6aac7ce4279a53.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/frontend-pt-BR-2fbc75a4c8c74171f2c0024f5b3f3ca839be93516f2bbf1de2b9287cd8b3c601.js" cache="true"></script>\n' +
+    '\n' +
+    '  </head>\n' +
+    '\n' +
+    '  <body>\n' +
+    '    <div class="text-center">\n' +
+    '      <a href="/home" title="Início" class="brand">\n' +
+    '        <svg width="113" height="26" viewBox="0 0 113 26" fill="none" xmlns="http://www.w3.org/2000/svg">\n' +
+    '<g clip-path="url(#clip0)">\n' +
+    '<path d="M32.9189 15.8685H34.9293L36.7753 19.8877H36.9396L38.7856 15.8685H40.796V22.6683H39.519V18.3078L39.6201 17.3473H39.519L37.7868 21.0758H35.9408L34.2085 17.3473H34.0948L34.2085 18.3078V22.6683H32.9189V15.8685Z" fill="#212429"/>\n' +
+    '<path d="M43.8808 15.7169H46.9911L48.9257 22.6683H47.6107L47.1556 20.9873H43.7291L43.2739 22.6683H41.959L43.8808 15.7169ZM46.8015 19.7108L46.0555 16.9934H44.8038L44.0578 19.7108H46.8015Z" fill="#212429"/>\n' +
+    '<path d="M49.8867 15.7169H53.2627C54.8684 15.7169 55.9432 16.8291 55.9432 18.0298C55.9432 18.8134 55.5385 19.3443 55.1466 19.6855C54.9063 19.8877 54.6408 20.0394 54.35 20.1658L55.8926 22.6556H54.35L52.9212 20.3427H51.2018V22.6556H49.8867V15.7169ZM53.2627 19.0788C54.1351 19.0788 54.5776 18.6238 54.5776 18.0425C54.5776 17.4611 54.1351 17.0061 53.2627 17.0061H51.2018V19.0915H53.2627V19.0788Z" fill="#212429"/>\n' +
+    '<path d="M57.2581 15.7169H58.573V18.4975H59.888L61.7719 15.7169H63.2512L60.9753 19.0788L63.4282 22.6683H61.8857L59.9385 19.774H58.573V22.6683H57.2581V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M64.2881 15.7169H69.4214V16.9934H65.6029V18.4975H68.7386V19.774H65.6029V21.3918H69.4214V22.6683H64.2881V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M69.9397 15.7169H76.1604V16.9934H73.7076V22.6683H72.3926V16.9934H69.9397V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M78.3984 15.7169H77.0835V22.6683H78.3984V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M79.9915 15.7169H81.7619L84.9095 20.9241H85.0241L84.9095 20.0015V15.7169H86.225V22.6683H84.4423L81.3061 17.4484H81.1927L81.3061 18.3837V22.6683H79.9915V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M91.308 15.4894C92.7615 15.4894 93.6594 16.1213 94.2029 16.766C94.5068 17.1325 94.7465 17.5622 94.9114 18.0425H93.596C93.47 17.777 93.3051 17.5495 93.1028 17.3473C92.7494 16.9935 92.1798 16.6522 91.308 16.6522C89.9422 16.6522 88.855 17.7644 88.855 19.1927C88.855 20.6208 89.9422 21.733 91.308 21.733C92.218 21.733 92.7997 21.3286 93.154 20.9242C93.3563 20.684 93.5204 20.4186 93.6472 20.1152H92.5089V18.8387H95.9352V20.1152H94.9618C94.7847 20.6335 94.5442 21.1011 94.2411 21.5055C93.7097 22.2133 92.7867 22.8958 91.308 22.8958C89.1329 22.8958 87.4771 21.2149 87.4771 19.1927C87.4771 17.1704 89.1329 15.4894 91.308 15.4894Z" fill="#212429"/>\n' +
+    '<path d="M57.473 9.70076C57.5488 9.9662 57.6752 10.2063 57.8648 10.4085C58.2062 10.7625 58.75 11.1037 59.7489 11.1037C61.2155 11.1037 61.8098 10.5097 61.8098 9.92826C61.8098 8.99299 60.381 8.76549 58.9396 8.46218C57.4982 8.1588 56.0694 7.55216 56.0694 5.88383C56.0694 4.48091 57.3212 3.24231 59.673 3.24231C61.3167 3.24231 62.2775 3.89953 62.8212 4.56939C63.15 4.9612 63.3649 5.40356 63.504 5.89648H61.7339C61.658 5.70689 61.5442 5.5173 61.3672 5.353C61.0764 5.07494 60.558 4.79688 59.673 4.79688C58.3327 4.79688 57.8396 5.23924 57.8396 5.82063C57.8396 6.47786 58.6488 6.79383 59.6476 6.99605C61.3419 7.3373 63.5799 7.74174 63.5799 9.86505C63.5799 11.3312 62.2649 12.6583 59.7489 12.6583C57.8776 12.6583 56.8407 11.9378 56.2718 11.1922C55.943 10.7625 55.7281 10.2695 55.627 9.72603H57.473V9.70076Z" fill="#212429"/>\n' +
+    '<path d="M64.0225 3.52032H72.0386V5.13811H68.8776V12.3549H67.1834V5.13811H64.0225V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M78.0697 8.60119L77.1088 5.15074H75.4904L74.5294 8.60119H78.0697ZM74.3018 3.52032H78.3099L80.8008 12.3423H79.1065L78.5122 10.2063H74.0996L73.5053 12.3423H71.811L74.3018 3.52032Z" fill="#212429"/>\n' +
+    '<path d="M80.573 3.52032H88.5892V5.13811H85.4278V12.3549H83.7337V5.13811H80.573V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M91.459 3.52032H89.7649V12.3423H91.459V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M98.0087 11.0279C99.8425 11.0279 101.17 9.70077 101.17 7.94399C101.17 6.17454 99.8425 4.86009 98.0087 4.86009C96.1757 4.86009 94.8481 6.18718 94.8481 7.94399C94.8481 9.70077 96.1757 11.0279 98.0087 11.0279ZM98.0087 3.22968C100.879 3.22968 102.94 5.28982 102.94 7.93134C102.94 10.5729 100.879 12.633 98.0087 12.633C95.1389 12.633 93.0776 10.5729 93.0776 7.93134C93.0776 5.28982 95.1389 3.22968 98.0087 3.22968Z" fill="#212429"/>\n' +
+    '<path d="M104.558 3.52032H106.834L110.88 10.1431H111.032L110.88 8.96771V3.52032H112.574V12.3549H110.298L106.252 5.73214H106.101L106.252 6.90756V12.3549H104.558V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M37.711 7.67857H35.7385V5.54259H37.711C38.3938 5.54259 38.9121 5.99759 38.9121 6.60426C38.9121 7.21093 38.4063 7.67857 37.711 7.67857ZM40.1513 9.32165C40.4421 9.18264 40.7202 8.9804 40.9604 8.71496C41.5168 8.14621 41.795 7.43843 41.795 6.6169C41.795 4.61995 40.2271 3.22968 37.9891 3.22968H32.9316V12.6457H35.7385V9.92827H37.4581L38.988 12.6457H41.8202L39.9868 9.39746L40.1513 9.32165Z" fill="#212429"/>\n' +
+    '<path d="M46.043 10.2569V5.61843H47.1051C48.5844 5.61843 49.4948 6.50316 49.4948 7.93134C49.4948 9.35952 48.5844 10.2442 47.1051 10.2442H46.043V10.2569ZM52.4407 7.93134C52.4407 5.20134 50.2281 3.22968 47.1809 3.22968H43.2361V12.6457H47.1809C50.2281 12.6457 52.4407 10.6614 52.4407 7.93134Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 18.8629L26.01 23.6751V19.3604L12.9999 14.5482L0 19.3604V23.6751L12.9999 18.8629Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 18.863L0 23.6751L4.82533 26L12.9999 22.9746L21.1846 26L26.01 23.6751L12.9999 18.863Z" fill="#19C1CE"/>\n' +
+    '<path d="M12.9999 7.13705L0 2.32483V6.63954L12.9999 11.4518L26.01 6.63954V2.32483L12.9999 7.13705Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 7.13708L26.01 2.32486L21.1846 0L12.9999 3.02541L4.82533 0L0 2.32486L12.9999 7.13708Z" fill="#19C1CE"/>\n' +
+    '</g>\n' +
+    '<defs>\n' +
+    '<clipPath id="clip0">\n' +
+    '<rect width="112.938" height="26" fill="white"/>\n' +
+    '</clipPath>\n' +
+    '</defs>\n' +
+    '</svg>\n' +
+    '\n' +
+    '      </a>\n' +
+    '    </div>\n' +
+    '\n' +
+    '    <div id="content-outside" class="container">\n' +
+    '      \n' +
+    '<section class="section-heading">\n' +
+    '  <img width="600" src="https://d3ndvx6e67vt0s.cloudfront.net/assets/error_page/img-500-6546ba76f97f2a8e86db32ddc6d53d155dbf27f84e79746975779e63eb5120a7.svg" />\n' +
+    '  <h1>Não repare na bagunça!</h1>\n' +
+    '</section>\n' +
+    '<section class="section-body">\n' +
+    '    <p>Problemas técnicos são sempre inesperados, mas estamos correndo para voltar a funcionar perfeitamente. Tente de novo em alguns minutos.</p>\n' +
+    '</section>\n' +
+    '      <section class="section-footer">\n' +
+    '          <a class="btn btn-links-outline" href="https://status.rdstation.com/">Consultar status do sistema</a>\n' +
+    '          <a class="btn btn-links" href="/home">Ir para o RD Station Marketing</a>\n' +
+    '      </section>\n' +
+    '      <p class="support">Isso não parece certo? Que tal <a href="/suporte/novo">reportar o erro</a>?</p>\n' +
+    '      <p class="reserved-rights">©RD Station | Todos os direitos reservados</p>\n' +
+    '    </div>\n' +
+    '  </body>\n' +
+    '</html>\n',
+  status: 500,
+  url: 'https://api.rd.services/auth/token'
+}
+Nova requisição: {
+  method: 'GET',
+  url: '/lead?email=teste@exemplo.com',
+  headers: { host: '127.0.0.1:4000', 'user-agent': 'curl/8.7.1', accept: '*/*' }
+}
+Buscando lead com email: teste@exemplo.com
+Gerando token OAuth...
+Erro detalhado: {
+  message: 'Request failed with status code 500',
+  response: '<!DOCTYPE html>\n' +
+    '<html>\n' +
+    '  <head>\n' +
+    '    <meta charset="utf-8" />\n' +
+    '    <title>  500 - Erro interno no servidor\n' +
+    '</title>\n' +
+    '    <link rel="stylesheet" href="https://d3ndvx6e67vt0s.cloudfront.net/assets/application-a2804a1dd2217ea6db72c739b223ca9d4047a4a3166ba0c486250e9a521db56e.css" media="screen" />\n' +
+    '    <link rel="stylesheet" href="https://d3ndvx6e67vt0s.cloudfront.net/assets/error_pages-941ddda18bf83f3c67c0ba074beb5489a2d94f323b46409d1eb0d7d1a8ae9951.css" media="screen" />\n' +
+    '    <script nonce="NbCr+ndDBEVB/sni+aeTvUOBiCTGQucpGKJiNjaDvaw=">\n' +
+    '  ACCOUNT_LOCALE = "pt-BR";\n' +
+    `  LOCALE_MAP = JSON.parse('{"pt-BR":"pt_BR","en-US":"pt_BR","es-ES":"pt_BR"}');\n` +
+    `  LOCALE_INFO = JSON.parse('[{"locale":"pt-BR","name":"Português"},{"locale":"en-US","name":"English"},{"locale":"es-ES","name":"Español"}]');\n` +
+    '</script><script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n-bb5fba09c52eb6976f94dd79a240d735847bea9941a186a612ee2871cc02275f.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/locale-fbdefee35edc134468e527c9fd1b3eb2f6b5f6280ddda22b0493c65658761d61.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/frontend-global-a48418066f096a0410010a904c1d98f3d0246f1e11ce39706c6aac7ce4279a53.js" cache="true"></script>\n' +
+    '<script src="https://d3ndvx6e67vt0s.cloudfront.net/assets/i18n/frontend-pt-BR-2fbc75a4c8c74171f2c0024f5b3f3ca839be93516f2bbf1de2b9287cd8b3c601.js" cache="true"></script>\n' +
+    '\n' +
+    '  </head>\n' +
+    '\n' +
+    '  <body>\n' +
+    '    <div class="text-center">\n' +
+    '      <a href="/home" title="Início" class="brand">\n' +
+    '        <svg width="113" height="26" viewBox="0 0 113 26" fill="none" xmlns="http://www.w3.org/2000/svg">\n' +
+    '<g clip-path="url(#clip0)">\n' +
+    '<path d="M32.9189 15.8685H34.9293L36.7753 19.8877H36.9396L38.7856 15.8685H40.796V22.6683H39.519V18.3078L39.6201 17.3473H39.519L37.7868 21.0758H35.9408L34.2085 17.3473H34.0948L34.2085 18.3078V22.6683H32.9189V15.8685Z" fill="#212429"/>\n' +
+    '<path d="M43.8808 15.7169H46.9911L48.9257 22.6683H47.6107L47.1556 20.9873H43.7291L43.2739 22.6683H41.959L43.8808 15.7169ZM46.8015 19.7108L46.0555 16.9934H44.8038L44.0578 19.7108H46.8015Z" fill="#212429"/>\n' +
+    '<path d="M49.8867 15.7169H53.2627C54.8684 15.7169 55.9432 16.8291 55.9432 18.0298C55.9432 18.8134 55.5385 19.3443 55.1466 19.6855C54.9063 19.8877 54.6408 20.0394 54.35 20.1658L55.8926 22.6556H54.35L52.9212 20.3427H51.2018V22.6556H49.8867V15.7169ZM53.2627 19.0788C54.1351 19.0788 54.5776 18.6238 54.5776 18.0425C54.5776 17.4611 54.1351 17.0061 53.2627 17.0061H51.2018V19.0915H53.2627V19.0788Z" fill="#212429"/>\n' +
+    '<path d="M57.2581 15.7169H58.573V18.4975H59.888L61.7719 15.7169H63.2512L60.9753 19.0788L63.4282 22.6683H61.8857L59.9385 19.774H58.573V22.6683H57.2581V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M64.2881 15.7169H69.4214V16.9934H65.6029V18.4975H68.7386V19.774H65.6029V21.3918H69.4214V22.6683H64.2881V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M69.9397 15.7169H76.1604V16.9934H73.7076V22.6683H72.3926V16.9934H69.9397V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M78.3984 15.7169H77.0835V22.6683H78.3984V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M79.9915 15.7169H81.7619L84.9095 20.9241H85.0241L84.9095 20.0015V15.7169H86.225V22.6683H84.4423L81.3061 17.4484H81.1927L81.3061 18.3837V22.6683H79.9915V15.7169Z" fill="#212429"/>\n' +
+    '<path d="M91.308 15.4894C92.7615 15.4894 93.6594 16.1213 94.2029 16.766C94.5068 17.1325 94.7465 17.5622 94.9114 18.0425H93.596C93.47 17.777 93.3051 17.5495 93.1028 17.3473C92.7494 16.9935 92.1798 16.6522 91.308 16.6522C89.9422 16.6522 88.855 17.7644 88.855 19.1927C88.855 20.6208 89.9422 21.733 91.308 21.733C92.218 21.733 92.7997 21.3286 93.154 20.9242C93.3563 20.684 93.5204 20.4186 93.6472 20.1152H92.5089V18.8387H95.9352V20.1152H94.9618C94.7847 20.6335 94.5442 21.1011 94.2411 21.5055C93.7097 22.2133 92.7867 22.8958 91.308 22.8958C89.1329 22.8958 87.4771 21.2149 87.4771 19.1927C87.4771 17.1704 89.1329 15.4894 91.308 15.4894Z" fill="#212429"/>\n' +
+    '<path d="M57.473 9.70076C57.5488 9.9662 57.6752 10.2063 57.8648 10.4085C58.2062 10.7625 58.75 11.1037 59.7489 11.1037C61.2155 11.1037 61.8098 10.5097 61.8098 9.92826C61.8098 8.99299 60.381 8.76549 58.9396 8.46218C57.4982 8.1588 56.0694 7.55216 56.0694 5.88383C56.0694 4.48091 57.3212 3.24231 59.673 3.24231C61.3167 3.24231 62.2775 3.89953 62.8212 4.56939C63.15 4.9612 63.3649 5.40356 63.504 5.89648H61.7339C61.658 5.70689 61.5442 5.5173 61.3672 5.353C61.0764 5.07494 60.558 4.79688 59.673 4.79688C58.3327 4.79688 57.8396 5.23924 57.8396 5.82063C57.8396 6.47786 58.6488 6.79383 59.6476 6.99605C61.3419 7.3373 63.5799 7.74174 63.5799 9.86505C63.5799 11.3312 62.2649 12.6583 59.7489 12.6583C57.8776 12.6583 56.8407 11.9378 56.2718 11.1922C55.943 10.7625 55.7281 10.2695 55.627 9.72603H57.473V9.70076Z" fill="#212429"/>\n' +
+    '<path d="M64.0225 3.52032H72.0386V5.13811H68.8776V12.3549H67.1834V5.13811H64.0225V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M78.0697 8.60119L77.1088 5.15074H75.4904L74.5294 8.60119H78.0697ZM74.3018 3.52032H78.3099L80.8008 12.3423H79.1065L78.5122 10.2063H74.0996L73.5053 12.3423H71.811L74.3018 3.52032Z" fill="#212429"/>\n' +
+    '<path d="M80.573 3.52032H88.5892V5.13811H85.4278V12.3549H83.7337V5.13811H80.573V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M91.459 3.52032H89.7649V12.3423H91.459V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M98.0087 11.0279C99.8425 11.0279 101.17 9.70077 101.17 7.94399C101.17 6.17454 99.8425 4.86009 98.0087 4.86009C96.1757 4.86009 94.8481 6.18718 94.8481 7.94399C94.8481 9.70077 96.1757 11.0279 98.0087 11.0279ZM98.0087 3.22968C100.879 3.22968 102.94 5.28982 102.94 7.93134C102.94 10.5729 100.879 12.633 98.0087 12.633C95.1389 12.633 93.0776 10.5729 93.0776 7.93134C93.0776 5.28982 95.1389 3.22968 98.0087 3.22968Z" fill="#212429"/>\n' +
+    '<path d="M104.558 3.52032H106.834L110.88 10.1431H111.032L110.88 8.96771V3.52032H112.574V12.3549H110.298L106.252 5.73214H106.101L106.252 6.90756V12.3549H104.558V3.52032Z" fill="#212429"/>\n' +
+    '<path d="M37.711 7.67857H35.7385V5.54259H37.711C38.3938 5.54259 38.9121 5.99759 38.9121 6.60426C38.9121 7.21093 38.4063 7.67857 37.711 7.67857ZM40.1513 9.32165C40.4421 9.18264 40.7202 8.9804 40.9604 8.71496C41.5168 8.14621 41.795 7.43843 41.795 6.6169C41.795 4.61995 40.2271 3.22968 37.9891 3.22968H32.9316V12.6457H35.7385V9.92827H37.4581L38.988 12.6457H41.8202L39.9868 9.39746L40.1513 9.32165Z" fill="#212429"/>\n' +
+    '<path d="M46.043 10.2569V5.61843H47.1051C48.5844 5.61843 49.4948 6.50316 49.4948 7.93134C49.4948 9.35952 48.5844 10.2442 47.1051 10.2442H46.043V10.2569ZM52.4407 7.93134C52.4407 5.20134 50.2281 3.22968 47.1809 3.22968H43.2361V12.6457H47.1809C50.2281 12.6457 52.4407 10.6614 52.4407 7.93134Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 18.8629L26.01 23.6751V19.3604L12.9999 14.5482L0 19.3604V23.6751L12.9999 18.8629Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 18.863L0 23.6751L4.82533 26L12.9999 22.9746L21.1846 26L26.01 23.6751L12.9999 18.863Z" fill="#19C1CE"/>\n' +
+    '<path d="M12.9999 7.13705L0 2.32483V6.63954L12.9999 11.4518L26.01 6.63954V2.32483L12.9999 7.13705Z" fill="#212429"/>\n' +
+    '<path d="M12.9999 7.13708L26.01 2.32486L21.1846 0L12.9999 3.02541L4.82533 0L0 2.32486L12.9999 7.13708Z" fill="#19C1CE"/>\n' +
+    '</g>\n' +
+    '<defs>\n' +
+    '<clipPath id="clip0">\n' +
+    '<rect width="112.938" height="26" fill="white"/>\n' +
+    '</clipPath>\n' +
+    '</defs>\n' +
+    '</svg>\n' +
+    '\n' +
+    '      </a>\n' +
+    '    </div>\n' +
+    '\n' +
+    '    <div id="content-outside" class="container">\n' +
+    '      \n' +
+    '<section class="section-heading">\n' +
+    '  <img width="600" src="https://d3ndvx6e67vt0s.cloudfront.net/assets/error_page/img-500-6546ba76f97f2a8e86db32ddc6d53d155dbf27f84e79746975779e63eb5120a7.svg" />\n' +
+    '  <h1>Não repare na bagunça!</h1>\n' +
+    '</section>\n' +
+    '<section class="section-body">\n' +
+    '    <p>Problemas técnicos são sempre inesperados, mas estamos correndo para voltar a funcionar perfeitamente. Tente de novo em alguns minutos.</p>\n' +
+    '</section>\n' +
+    '      <section class="section-footer">\n' +
+    '          <a class="btn btn-links-outline" href="https://status.rdstation.com/">Consultar status do sistema</a>\n' +
+    '          <a class="btn btn-links" href="/home">Ir para o RD Station Marketing</a>\n' +
+    '      </section>\n' +
+    '      <p class="support">Isso não parece certo? Que tal <a href="/suporte/novo">reportar o erro</a>?</p>\n' +
+    '      <p class="reserved-rights">©RD Station | Todos os direitos reservados</p>\n' +
+    '    </div>\n' +
+    '  </body>\n' +
+    '</html>\n',
+  status: 500,
+  url: 'https://api.rd.services/auth/token'
+}
