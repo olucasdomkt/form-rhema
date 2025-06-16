@@ -1,0 +1,23 @@
+# 📋 COMANDOS PARA CONECTAR AO GITHUB
+
+## Substitua "SEU_USUARIO" pelo seu nome de usuário do GitHub
+
+# 1. Conectar ao repositório remoto (substitua SEU_USUARIO)
+git remote add origin https://github.com/SEU_USUARIO/form-rhema.git
+
+# 2. Verificar se conectou
+git remote -v
+
+# 3. Fazer push para o GitHub
+git push -u origin main
+
+## EXEMPLO se seu usuário for "lucas123":
+# git remote add origin https://github.com/lucas123/form-rhema.git
+# git push -u origin main
+
+## ⚠️ SE DER ERRO de autenticação:
+## 1. O GitHub vai pedir login
+## 2. Use seu email e senha do GitHub
+## 3. Ou configure SSH key (mais avançado)
+
+## 🎉 APÓS O PUSH funcionar, continue com o deploy! 
