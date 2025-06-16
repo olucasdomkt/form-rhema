@@ -1,10 +1,10 @@
 export const RD_STATION_CONFIG = {
-  clientId: process.env.REACT_APP_RD_CLIENT_ID || '',
-  clientSecret: process.env.REACT_APP_RD_CLIENT_SECRET || '',
-  redirectUri: process.env.REACT_APP_RD_REDIRECT_URI || '',
+  clientId: process.env.REACT_APP_RD_CLIENT_ID || 'a0d1c3dc-2b96-4c13-8809-32c7316901e2',
+  clientSecret: process.env.REACT_APP_RD_CLIENT_SECRET || '8ce6ae66189e46ebbe34dd137324bc4d',
+  redirectUri: process.env.REACT_APP_RD_REDIRECT_URI || 'https://form-rhema.vercel.app/auth/callback',
   apiUrl: 'https://api.rd.services',
   publicApiUrl: 'https://api.rdstation.com/api/1.3',
-  baseUrl: process.env.REACT_APP_BASE_URL || 'http://localhost:3000'
+  baseUrl: process.env.REACT_APP_BASE_URL || 'https://form-rhema.vercel.app'
 };
 
 export const RD_STATION_ENDPOINTS = {
