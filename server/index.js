@@ -1,4 +1,801 @@
+  tokenUrl: 'https://api.rd.services/auth/token'
+};
+
+// Para testes, vamos usar sempre o callback local
+const testConfig = {
+  ...oauth2Config,
+  redirectUri: 'http://127.0.0.1:4000/auth/callback'
+};
+
+// Configuração alternativa para usar o endpoint rdstation-callback
+const rdCallbackConfig = {
+  ...oauth2Config,
+  redirectUri: 'http://127.0.0.1:4000/rdstation-callback'
+};
+
+// Endpoint para processar código OAuth2 (via API)
+app.post('/auth/process-code', async (req, res) => {
+  try {
+    console.log('=== PROCESSANDO CÓDIGO OAUTH2 VIA API ===');
+    const { code, state } = req.body;
+    
+    console.log('Code:', code);
+    console.log('State:', state);
+    
+    if (!code) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Código OAuth2 não fornecido' 
+      });
+    }
+    
+    // Trocar código por access_token
+    const tokenResponse = await fetch(oauth2Config.tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: oauth2Config.clientId,
+        client_secret: oauth2Config.clientSecret,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: oauth2Config.redirectUri
+      })
+    });
+    
+    const tokenData = await tokenResponse.json();
+    console.log('Resposta do token:', tokenData);
+    
+    if (tokenData.access_token) {
+      // Armazenar token (em produção, use um banco de dados)
+      global.rdToken = {
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_at: Date.now() + (tokenData.expires_in * 1000),
+        created_at: new Date().toISOString()
+      };
+      
+      console.log('✅ Token armazenado com sucesso!');
+      
+      res.json({ 
+        success: true, 
+        message: 'Autenticação OAuth2 concluída com sucesso!',
+        token_info: {
+          expires_in: tokenData.expires_in,
+          scope: tokenData.scope
+        }
+      });
+    } else {
+      console.error('❌ Erro ao obter token:', tokenData);
+      res.status(400).json({ 
+        success: false, 
+        error: tokenData.error_description || 'Erro ao trocar código por token' 
+      });
+    }
+  } catch (error) {
+    console.error('❌ Erro no processamento:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erro interno do servidor' 
+    });
+  }
+});
+
+// OAuth2 - Iniciar autorização (produção)
+app.get('/auth/authorize', (req, res) => {
+  console.log('=== INICIANDO OAUTH2 ===');
+  const state = 'security_token_123';
+  const authUrl = `${oauth2Config.authUrl}?client_id=${oauth2Config.clientId}&redirect_uri=${encodeURIComponent(oauth2Config.redirectUri)}&response_type=code&state=${state}`;
+  
+  console.log('Redirecionando para:', authUrl);
+  res.redirect(authUrl);
+});
+
+// OAuth2 - Iniciar autorização (desenvolvimento local)
+app.get('/auth/authorize-local', (req, res) => {
+  console.log('=== INICIANDO OAUTH2 (DESENVOLVIMENTO LOCAL) ===');
+  const state = 'security_token_dev_123';
+  const authUrl = `${testConfig.authUrl}?client_id=${testConfig.clientId}&redirect_uri=${encodeURIComponent(testConfig.redirectUri)}&response_type=code&state=${state}`;
+  
+  console.log('Redirecionamento local para:', authUrl);
+  res.redirect(authUrl);
+});
+
+// OAuth2 - Iniciar autorização (usando rdstation-callback)
+app.get('/auth/authorize-rdcallback', (req, res) => {
+  console.log('=== INICIANDO OAUTH2 (RD CALLBACK) ===');
+  const state = 'security_token_rd_123';
+  const authUrl = `${rdCallbackConfig.authUrl}?client_id=${rdCallbackConfig.clientId}&redirect_uri=${encodeURIComponent(rdCallbackConfig.redirectUri)}&response_type=code&state=${state}`;
+  
+  console.log('Redirecionamento para rdstation-callback:', authUrl);
+  res.redirect(authUrl);
+});
+
+// OAuth2 - Callback (desenvolvimento)
+app.get('/auth/callback', async (req, res) => {
+  console.log('=== CALLBACK OAUTH2 ===');
+  const { code, state } = req.query;
+  
+  console.log('Code:', code);
+  console.log('State:', state);
+  
+  if (!code) {
+    return res.status(400).send(`
+      <h1>❌ Erro OAuth2</h1>
+      <p>Código de autorização não recebido.</p>
+      <a href="/dashboard">🔙 Voltar ao Dashboard</a>
+    `);
+  }
+  
+  try {
+    // Processar o código usando a mesma lógica do endpoint POST
+    const tokenResponse = await fetch(testConfig.tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: testConfig.clientId,
+        client_secret: testConfig.clientSecret,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: testConfig.redirectUri
+      })
+    });
+    
+    const tokenData = await tokenResponse.json();
+    console.log('Resposta do token (callback):', tokenData);
+    
+    if (tokenData.access_token) {
+      global.rdToken = {
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_at: Date.now() + (tokenData.expires_in * 1000),
+        created_at: new Date().toISOString()
+      };
+      
+      console.log('✅ Token armazenado via callback!');
+      
+      res.send(`
+        <h1>✅ Autenticação OAuth2 Concluída!</h1>
+        <p><strong>Access Token recebido:</strong> ${tokenData.access_token.substring(0, 20)}...</p>
+        <p><strong>Expira em:</strong> ${tokenData.expires_in} segundos</p>
+        <p><strong>Scope:</strong> ${tokenData.scope || 'N/A'}</p>
+        <br>
+        <a href="/dashboard" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+          🔙 Voltar ao Dashboard
+        </a>
+        <script>
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 3000);
+        </script>
+      `);
+    } else {
+      console.error('❌ Erro no token via callback:', tokenData);
+      res.status(400).send(`
+        <h1>❌ Erro OAuth2</h1>
+        <p><strong>Erro:</strong> ${tokenData.error_description || 'Erro ao trocar código por token'}</p>
+        <a href="/dashboard">🔙 Tentar Novamente</a>
+      `);
+    }
+  } catch (error) {
+    console.error('❌ Erro no callback:', error);
+    res.status(500).send(`
+      <h1>❌ Erro Internal</h1>
+      <p>Erro ao processar callback OAuth2</p>
+      <a href="/dashboard">🔙 Voltar ao Dashboard</a>
+    `);
+  }
+});
+
+// Verificar status da autenticação
+app.get('/auth/status', (req, res) => {
+  const isAuthenticated = global.rdToken && global.rdToken.access_token && 
+                          global.rdToken.expires_at > Date.now();
+  
+  res.json({
+    authenticated: isAuthenticated,
+    token_info: isAuthenticated ? {
+      expires_at: new Date(global.rdToken.expires_at).toISOString(),
+      created_at: global.rdToken.created_at
+    } : null
+  });
+});
+
+// Endpoint para buscar lead por email
+app.get('/lead', async (req, res) => {
+  const { email } = req.query;
+  
+  console.log(`Buscando lead com email: ${email}`);
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email é obrigatório' });
+  }
+  
+  // Verificar se temos token válido
+  const hasValidToken = global.rdToken && 
+                       global.rdToken.access_token && 
+                       global.rdToken.expires_at > Date.now();
+  
+  if (hasValidToken) {
+    try {
+      console.log('=== USANDO TOKEN REAL RD STATION ===');
+      
+      // Fazer requisição real para API do RD Station
+      const response = await fetch(`https://api.rd.services/platform/contacts/email:${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${global.rdToken.access_token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const leadData = await response.json();
+        console.log('Lead encontrado via API real:', leadData);
+        return res.json(leadData);
+      } else if (response.status === 404) {
+        console.log('Lead não encontrado na API real');
+        return res.status(404).json({ error: 'Lead não encontrado' });
+      } else {
+        console.error('Erro na API do RD Station:', response.status, response.statusText);
+        // Continuar para fallback
+      }
+    } catch (error) {
+      console.error('Erro ao buscar lead na API real:', error);
+      // Continuar para fallback
+    }
+  }
+  
+  // Fallback: usar dados simulados
+  console.log('=== USANDO DADOS SIMULADOS (FALLBACK) ===');
+  
+  const leadSimulado = mockLeads.find(lead => lead.email.toLowerCase() === email.toLowerCase());
+  
+  if (leadSimulado) {
+    console.log('Lead encontrado nos dados simulados:', leadSimulado);
+    res.json(leadSimulado);
+  } else {
+    console.log('Lead não encontrado');
+    res.status(404).json({ error: 'Lead não encontrado' });
+  }
+});
+
+// Página de teste que simula o site do RD Station
+app.get('/contato-teste', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>RD Station - Página de Contato (TESTE)</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+            .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+            .btn { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; margin: 10px 5px; }
+            .btn:hover { background: #0056b3; }
+            .success { background: #d4edda; padding: 15px; border-radius: 5px; color: #155724; margin: 20px 0; }
+            .error { background: #f8d7da; padding: 15px; border-radius: 5px; color: #721c24; margin: 20px 0; }
+            .loading { background: #fff3cd; padding: 15px; border-radius: 5px; color: #856404; margin: 20px 0; }
+            #status { margin: 20px 0; }
+            input[type="email"] { padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 300px; margin-right: 10px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🚀 RD Station - Página de Contato (TESTE)</h1>
+            <p>Esta é uma página de teste que simula a página real onde será implementada a integração OAuth2.</p>
+        </div>
+
+        <div id="status"></div>
+
+        <h2>🔗 Integração OAuth2 RD Station Marketing</h2>
+        
+        <button id="btnAuth" class="btn" onclick="iniciarAutenticacao()">
+            🔑 Conectar com RD Station Marketing
+        </button>
+
+        <h3>🔍 Buscar Lead</h3>
+        <input type="email" id="emailBusca" placeholder="Digite o email para buscar" value="teste@exemplo.com">
+        <button class="btn" onclick="buscarLead()">🔍 Buscar Lead</button>
+        
+        <div id="resultadoBusca"></div>
+
+        <h3>📊 Status da Autenticação</h3>
+        <button class="btn" onclick="verificarStatus()">🔄 Verificar Status</button>
+        <div id="statusAuth"></div>
+
+        <script>
+        // Função para iniciar autenticação OAuth2
+        function iniciarAutenticacao() {
+            const authUrl = 'http://127.0.0.1:4000/auth/authorize-local';
+            
+            document.getElementById('status').innerHTML = 
+                '<div class="loading">🔄 Redirecionando para autenticação...</div>';
+            
+            // Redirecionar para autenticação
+            window.location.href = authUrl;
+        }
+
+        // Processar callback do RD Station (se houver código na URL)
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            
+            if (code && state) {
+                console.log('Código OAuth2 recebido:', code);
+                
+                document.getElementById('status').innerHTML = 
+                    '<div class="loading">🔄 Processando autenticação...</div>';
+                
+                // Enviar código para nossa API
+                fetch('http://127.0.0.1:4000/auth/process-code', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ code, state })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Autenticação concluída:', data);
+                    
+                    if (data.success) {
+                        document.getElementById('status').innerHTML = 
+                            '<div class="success">✅ Autenticação OAuth2 concluída com sucesso!</div>';
+                        
+                        // Limpar URL removendo parâmetros OAuth2
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                        // Verificar status após autenticação
+                        setTimeout(verificarStatus, 1000);
+                    } else {
+                        console.error('Erro na autenticação:', data);
+                        document.getElementById('status').innerHTML = 
+                            '<div class="error">❌ Erro na autenticação: ' + data.error + '</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao processar autenticação:', error);
+                    document.getElementById('status').innerHTML = 
+                        '<div class="error">❌ Erro ao conectar com a API</div>';
+                });
+            }
+            
+            // Verificar status inicial
+            verificarStatus();
+        });
+
+        // Função para buscar lead
+        function buscarLead() {
+            const email = document.getElementById('emailBusca').value;
+            
+            if (!email) {
+                alert('Digite um email para buscar');
+                return;
+            }
+            
+            document.getElementById('resultadoBusca').innerHTML = 
+                '<div class="loading">🔄 Buscando lead...</div>';
+            
+            fetch(\`http://127.0.0.1:4000/lead?email=\${encodeURIComponent(email)}\`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Resultado da busca:', data);
+                    
+                    if (data.error) {
+                        document.getElementById('resultadoBusca').innerHTML = 
+                            '<div class="error">❌ ' + data.error + '</div>';
+                    } else {
+                        document.getElementById('resultadoBusca').innerHTML = 
+                            '<div class="success">' +
+                            '<h4>📋 Lead Encontrado:</h4>' +
+                            '<p><strong>Nome:</strong> ' + data.name + '</p>' +
+                            '<p><strong>Email:</strong> ' + data.email + '</p>' +
+                            '<p><strong>Empresa:</strong> ' + data.company + '</p>' +
+                            '<p><strong>Cargo:</strong> ' + data.job_title + '</p>' +
+                            '<p><strong>Status:</strong> ' + data.lead_stage + '</p>' +
+                            '<p><strong>Oportunidade:</strong> ' + (data.opportunity ? 'Sim' : 'Não') + '</p>' +
+                            '</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar lead:', error);
+                    document.getElementById('resultadoBusca').innerHTML = 
+                        '<div class="error">❌ Erro na busca</div>';
+                });
+        }
+
+        // Função para verificar status
+        function verificarStatus() {
+            fetch('http://127.0.0.1:4000/auth/status')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Status:', data);
+                    
+                    if (data.authenticated) {
+                        document.getElementById('statusAuth').innerHTML = 
+                            '<div class="success">' +
+                            '<h4>✅ Autenticado com RD Station</h4>' +
+                            '<p><strong>Token criado em:</strong> ' + new Date(data.token_info.created_at).toLocaleString() + '</p>' +
+                            '<p><strong>Token expira em:</strong> ' + new Date(data.token_info.expires_at).toLocaleString() + '</p>' +
+                            '</div>';
+                    } else {
+                        document.getElementById('statusAuth').innerHTML = 
+                            '<div class="error">❌ Não autenticado. Clique em "Conectar com RD Station" para autenticar.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao verificar status:', error);
+                    document.getElementById('statusAuth').innerHTML = 
+                        '<div class="error">❌ Erro ao verificar status</div>';
+                });
+        }
+        </script>
+    </body>
+    </html>
+  `);
+});
+
+// Página que simula o callback oficial do RD Station
+app.get('/rdstation-callback', (req, res) => {
+  const { code, state } = req.query;
+  
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>RD Station - Processando Autenticação</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+            .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+            .success { background: #d4edda; padding: 15px; border-radius: 5px; color: #155724; margin: 20px 0; }
+            .error { background: #f8d7da; padding: 15px; border-radius: 5px; color: #721c24; margin: 20px 0; }
+            .loading { background: #fff3cd; padding: 15px; border-radius: 5px; color: #856404; margin: 20px 0; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🔑 RD Station - Processando OAuth2</h1>
+            <p>Aguarde, estamos processando sua autenticação...</p>
+        </div>
+
+        <div id="status" class="loading">🔄 Processando código de autorização...</div>
+
+        <script>
+        const code = '${code}';
+        const state = '${state}';
+        
+        if (code && state) {
+            console.log('Código OAuth2 recebido:', code);
+            
+            // Enviar código para nossa API
+            fetch('http://127.0.0.1:4000/auth/process-code', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ code, state })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Autenticação concluída:', data);
+                
+                if (data.success) {
+                    document.getElementById('status').className = 'success';
+                    document.getElementById('status').innerHTML = 
+                        '✅ Autenticação OAuth2 concluída com sucesso!<br>' +
+                        'Redirecionando para o dashboard...';
+                    
+                    // Redirecionar para dashboard após 2 segundos
+                    setTimeout(() => {
+                        window.location.href = 'http://127.0.0.1:4000/dashboard';
+                    }, 2000);
+                } else {
+                    console.error('Erro na autenticação:', data);
+                    document.getElementById('status').className = 'error';
+                    document.getElementById('status').innerHTML = 
+                        '❌ Erro na autenticação: ' + data.error;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao processar autenticação:', error);
+                document.getElementById('status').className = 'error';
+                document.getElementById('status').innerHTML = 
+                    '❌ Erro ao conectar com a API';
+            });
+        } else {
+            document.getElementById('status').className = 'error';
+            document.getElementById('status').innerHTML = 
+                '❌ Código de autorização não recebido';
+        }
+        </script>
+    </body>
+    </html>
+  `);
+});
+
+// Rota catch-all para React Router em produção
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+  });
+}
+
+app.listen(PORT, () => {
+  console.log('=================================');
+  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log('');
+  console.log('=== OAUTH2 RD STATION MARKETING ===');
+  console.log('1. Autenticar: /auth/authorize');
+  console.log('2. Status: /auth/status');
+  console.log('3. Buscar Lead: /lead?email=...');
+  console.log('');
+  console.log('=== EMAILS DE TESTE (FALLBACK) ===');
+  console.log('- teste@exemplo.com');
+  console.log('- maria@empresa.com.br');
+  console.log('=================================');
+}); 
+};
+
+// Para testes, vamos usar sempre o callback local
+const testConfig = {
+  ...oauth2Config,
+  redirectUri: 'http://127.0.0.1:4000/auth/callback'
+};
+
+// Configuração alternativa para usar o endpoint rdstation-callback
+const rdCallbackConfig = {
+  ...oauth2Config,
+  redirectUri: 'http://127.0.0.1:4000/rdstation-callback'
+};
+
+// Endpoint para processar código OAuth2 (via API)
+app.post('/auth/process-code', async (req, res) => {
+  try {
+    console.log('=== PROCESSANDO CÓDIGO OAUTH2 VIA API ===');
+    const { code, state } = req.body;
+    
+    console.log('Code:', code);
+    console.log('State:', state);
+    
+    if (!code) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Código OAuth2 não fornecido' 
+      });
+    }
+    
+    // Trocar código por access_token
+    const tokenResponse = await fetch(oauth2Config.tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: oauth2Config.clientId,
+        client_secret: oauth2Config.clientSecret,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: oauth2Config.redirectUri
+      })
+    });
+    
+    const tokenData = await tokenResponse.json();
+    console.log('Resposta do token:', tokenData);
+    
+    if (tokenData.access_token) {
+      // Armazenar token (em produção, use um banco de dados)
+      global.rdToken = {
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_at: Date.now() + (tokenData.expires_in * 1000),
+        created_at: new Date().toISOString()
+      };
+      
+      tokenStorage = global.rdToken;
+      
+      console.log('✅ Token armazenado com sucesso!');
+      
+      res.json({ 
+        success: true, 
+        message: 'Autenticação OAuth2 concluída com sucesso!',
+        token_info: {
+          expires_in: tokenData.expires_in,
+          scope: tokenData.scope
+        }
+      });
+    } else {
+      console.error('❌ Erro ao obter token:', tokenData);
+      res.status(400).json({ 
+        success: false, 
+        error: tokenData.error_description || 'Erro ao trocar código por token' 
+      });
+    }
+  } catch (error) {
+    console.error('❌ Erro no processamento:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erro interno do servidor' 
+    });
+  }
+});
+
+// OAuth2 - Iniciar autorização (produção)
+app.get('/auth/authorize', (req, res) => {
+  console.log('=== INICIANDO OAUTH2 ===');
+  const state = 'security_token_123';
+  const authUrl = `${oauth2Config.authUrl}?client_id=${oauth2Config.clientId}&redirect_uri=${encodeURIComponent(oauth2Config.redirectUri)}&response_type=code&state=${state}`;
+  
+  console.log('Redirecionando para:', authUrl);
+  res.redirect(authUrl);
+});
+
+// OAuth2 - Iniciar autorização (desenvolvimento local)
+app.get('/auth/authorize-local', (req, res) => {
+  console.log('=== INICIANDO OAUTH2 (DESENVOLVIMENTO LOCAL) ===');
+  const state = 'security_token_dev_123';
+  const authUrl = `${testConfig.authUrl}?client_id=${testConfig.clientId}&redirect_uri=${encodeURIComponent(testConfig.redirectUri)}&response_type=code&state=${state}`;
+  
+  console.log('Redirecionamento local para:', authUrl);
+  res.redirect(authUrl);
+});
+
+// OAuth2 - Iniciar autorização (usando rdstation-callback)
+app.get('/auth/authorize-rdcallback', (req, res) => {
+  console.log('=== INICIANDO OAUTH2 (RD CALLBACK) ===');
+  const state = 'security_token_rd_123';
+  const authUrl = `${rdCallbackConfig.authUrl}?client_id=${rdCallbackConfig.clientId}&redirect_uri=${encodeURIComponent(rdCallbackConfig.redirectUri)}&response_type=code&state=${state}`;
+  
+  console.log('Redirecionamento para rdstation-callback:', authUrl);
+  res.redirect(authUrl);
+});
+
+// OAuth2 - Callback (desenvolvimento)
+app.get('/auth/callback', async (req, res) => {
+  console.log('=== CALLBACK OAUTH2 ===');
+  const { code, state } = req.query;
+  
+  console.log('Code:', code);
+  console.log('State:', state);
+  
+  if (!code) {
+    return res.status(400).send(`
+      <h1>❌ Erro OAuth2</h1>
+      <p>Código de autorização não recebido.</p>
+      <a href="/dashboard">🔙 Voltar ao Dashboard</a>
+    `);
+  }
+  
+  try {
+    // Processar o código usando a mesma lógica do endpoint POST
+    const tokenResponse = await fetch(testConfig.tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: testConfig.clientId,
+        client_secret: testConfig.clientSecret,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: testConfig.redirectUri
+      })
+    });
+    
+    const tokenData = await tokenResponse.json();
 import express from 'express';
+    console.log('Resposta do token (callback):', tokenData);
+    
+    if (tokenData.access_token) {
+      global.rdToken = {
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_at: Date.now() + (tokenData.expires_in * 1000),
+        created_at: new Date().toISOString()
+      };
+      
+      tokenStorage = global.rdToken;
+      
+      console.log('✅ Token armazenado via callback!');
+      
+      res.send(`
+        <h1>✅ Autenticação OAuth2 Concluída!</h1>
+        <p><strong>Access Token recebido:</strong> ${tokenData.access_token.substring(0, 20)}...</p>
+        <p><strong>Expira em:</strong> ${tokenData.expires_in} segundos</p>
+        <p><strong>Scope:</strong> ${tokenData.scope || 'N/A'}</p>
+        <br>
+        <a href="/dashboard" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+          🔙 Voltar ao Dashboard
+        </a>
+        <script>
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 3000);
+        </script>
+      `);
+    } else {
+      console.error('❌ Erro no token via callback:', tokenData);
+      res.status(400).send(`
+        <h1>❌ Erro OAuth2</h1>
+        <p><strong>Erro:</strong> ${tokenData.error_description || 'Erro ao trocar código por token'}</p>
+        <a href="/dashboard">🔙 Tentar Novamente</a>
+      `);
+    }
+  } catch (error) {
+    console.error('❌ Erro no callback:', error);
+    res.status(500).send(`
+      <h1>❌ Erro Internal</h1>
+      <p>Erro ao processar callback OAuth2</p>
+      <a href="/dashboard">🔙 Voltar ao Dashboard</a>
+    `);
+  }
+});
+
+// Verificar status da autenticação
+app.get('/auth/status', (req, res) => {
+  const isAuthenticated = global.rdToken && global.rdToken.access_token && 
+                          global.rdToken.expires_at > Date.now();
+  
+  res.json({
+    authenticated: isAuthenticated,
+    token_info: isAuthenticated ? {
+      expires_at: new Date(global.rdToken.expires_at).toISOString(),
+      created_at: global.rdToken.created_at
+    } : null
+  });
+});
+
+// Endpoint para buscar lead por email
+app.get('/lead', async (req, res) => {
+  const { email } = req.query;
+  
+  console.log(`Buscando lead com email: ${email}`);
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email é obrigatório' });
+  }
+  
+  // Verificar se temos token válido
+  const hasValidToken = global.rdToken && 
+                       global.rdToken.access_token && 
+                       global.rdToken.expires_at > Date.now();
+  
+  if (hasValidToken) {
+    try {
+      console.log('=== USANDO TOKEN REAL RD STATION ===');
+      
+      // Fazer requisição real para API do RD Station
+      const response = await fetch(`https://api.rd.services/platform/contacts/email:${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${global.rdToken.access_token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const leadData = await response.json();
+        console.log('Lead encontrado via API real:', leadData);
+        return res.json(leadData);
+      } else if (response.status === 404) {
+        console.log('Lead não encontrado na API real');
+        return res.status(404).json({ error: 'Lead não encontrado' });
+      } else {
+        console.error('Erro na API do RD Station:', response.status, response.statusText);
+        // Continuar para fallback
+      }
+    } catch (error) {
 import axios from 'axios';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -533,59 +1330,7 @@ app.get('/auth/callback', async (req, res) => {
 
 // Verificar status da autenticação
 app.get('/auth/status', (req, res) => {
-  const isAuthenticated = global.rdToken && global.rdToken.access_token && 
-                          global.rdToken.expires_at > Date.now();
-  
-  res.json({
-    authenticated: isAuthenticated,
-    token_info: isAuthenticated ? {
-      expires_at: new Date(global.rdToken.expires_at).toISOString(),
-      created_at: global.rdToken.created_at
-    } : null
-  });
-});
-
-// Endpoint para buscar lead por email
-app.get('/lead', async (req, res) => {
-  const { email } = req.query;
-  
-  console.log(`Buscando lead com email: ${email}`);
-  
-  if (!email) {
-    return res.status(400).json({ error: 'Email é obrigatório' });
-  }
-  
-  // Verificar se temos token válido
-  const hasValidToken = global.rdToken && 
-                       global.rdToken.access_token && 
-                       global.rdToken.expires_at > Date.now();
-  
-  if (hasValidToken) {
-    try {
-      console.log('=== USANDO TOKEN REAL RD STATION ===');
-      
-      // Fazer requisição real para API do RD Station
-      const response = await fetch(`https://api.rd.services/platform/contacts/email:${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${global.rdToken.access_token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const leadData = await response.json();
-        console.log('Lead encontrado via API real:', leadData);
-        return res.json(leadData);
-      } else if (response.status === 404) {
-        console.log('Lead não encontrado na API real');
-        return res.status(404).json({ error: 'Lead não encontrado' });
-      } else {
-        console.error('Erro na API do RD Station:', response.status, response.statusText);
-        // Continuar para fallback
-      }
-    } catch (error) {
+  const isAuthenticated = isTokenValid();
       console.error('Erro ao buscar lead na API real:', error);
       // Continuar para fallback
     }

@@ -103,10 +103,10 @@ export const Form: React.FC = () => {
       startSearch();
       console.log('Iniciando busca de lead com email:', email);
       
-      // URL da API - temporariamente usando localhost, depois você configura para produção
-      const apiUrl = 'http://127.0.0.1:4000';
+      // URL da API - usa a própria URL da aplicação
+      const apiUrl = window.location.origin;
       
-      const response = await fetch(`${apiUrl}/lead?email=${encodeURIComponent(email)}`, {
+      const response = await fetch(`${apiUrl}/api/lead?email=${encodeURIComponent(email)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +115,8 @@ export const Form: React.FC = () => {
       
       console.log('Resposta recebida:', {
         status: response.status,
-        statusText: response.statusText
+        statusText: response.statusText,
+        url: `${apiUrl}/api/lead?email=${email}`
       });
 
       if (!response.ok) {
@@ -143,7 +144,7 @@ export const Form: React.FC = () => {
         
         toast({
           title: '✅ Dados encontrados!',
-          description: `Lead "${data.name}" carregado do RD Station`,
+          description: `Lead "${data.name}" carregado automaticamente`,
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -154,7 +155,7 @@ export const Form: React.FC = () => {
       console.error('Erro ao buscar lead:', error);
       toast({
         title: 'Erro ao buscar dados',
-        description: 'Verifique se o servidor Express está rodando',
+        description: 'Não foi possível conectar com a API',
         status: 'error',
         duration: 5000,
         isClosable: true,
