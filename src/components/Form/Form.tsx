@@ -102,13 +102,17 @@ export const Form: React.FC = () => {
   const searchLead = async (email: string) => {
     try {
       startSearch();
-      console.log('Iniciando busca de lead com email:', email);
+      console.log('🔍 Iniciando busca de lead com email:', email);
+      console.log('📋 Todos os leads disponíveis:', mockLeads);
       
       // Simular delay de API
       await new Promise(resolve => setTimeout(resolve, 800));
       
       // Buscar lead nos dados locais
       const leadData = findLeadByEmail(email);
+      console.log('🎯 Resultado da busca:', leadData);
+      console.log('🔍 Email sendo buscado (processado):', email.toLowerCase());
+      console.log('📧 Emails disponíveis:', mockLeads.map(lead => lead.email.toLowerCase()));
       
       if (leadData) {
         // Preencher campos com dados do lead
@@ -124,21 +128,22 @@ export const Form: React.FC = () => {
           isClosable: true,
         });
         
-        console.log('Lead encontrado:', leadData);
+        console.log('✅ Lead encontrado e campos preenchidos:', leadData);
       } else {
         toast({
           title: 'Lead não encontrado',
-          description: 'Nenhum dado encontrado para este email',
+          description: `Nenhum dado encontrado para: ${email}`,
           status: 'info',
           duration: 5000,
           isClosable: true,
         });
         
-        console.log('Lead não encontrado para email:', email);
+        console.log('❌ Lead não encontrado para email:', email);
+        console.log('💡 Emails disponíveis para teste:', mockLeads.map(lead => lead.email));
       }
 
     } catch (error) {
-      console.error('Erro ao buscar lead:', error);
+      console.error('❌ Erro ao buscar lead:', error);
       toast({
         title: 'Erro ao buscar dados',
         description: 'Erro interno na busca',
