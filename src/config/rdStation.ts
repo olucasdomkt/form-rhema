@@ -23,3 +23,24 @@ export const getAuthorizationUrl = () => {
   
   return `https://api.rd.services/auth/dialog?${params.toString()}`;
 };
+
+// Função para verificar se existe autenticação salva
+export const hasValidAuth = (): boolean => {
+  const authSuccess = localStorage.getItem('rd_oauth_success');
+  const authTimestamp = localStorage.getItem('rd_oauth_timestamp');
+  
+  if (!authSuccess || !authTimestamp) return false;
+  
+  // Verificar se a autenticação é recente (menos de 1 hora)
+  const oneHour = 60 * 60 * 1000;
+  const isRecent = (Date.now() - parseInt(authTimestamp)) < oneHour;
+  
+  return authSuccess === 'true' && isRecent;
+};
+
+// Função para limpar autenticação
+export const clearAuth = (): void => {
+  localStorage.removeItem('rd_oauth_success');
+  localStorage.removeItem('rd_oauth_code');
+  localStorage.removeItem('rd_oauth_timestamp');
+};
