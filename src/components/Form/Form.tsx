@@ -24,6 +24,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { estados } from '../../data/estados';
+import { mockLeads, findLeadByEmail } from '../../data/mockLeads';
 
 type FormData = {
   email: string;
@@ -103,59 +104,44 @@ export const Form: React.FC = () => {
       startSearch();
       console.log('Iniciando busca de lead com email:', email);
       
-      // URL da API - usa a própria URL da aplicação
-      const apiUrl = window.location.origin;
+      // Simular delay de API
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      const response = await fetch(`${apiUrl}/api/lead?email=${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      // Buscar lead nos dados locais
+      const leadData = findLeadByEmail(email);
       
-      console.log('Resposta recebida:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: `${apiUrl}/api/lead?email=${email}`
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Erro na resposta:', errorData);
-        
-        toast({
-          title: 'Lead não encontrado',
-          description: errorData.error || 'Nenhum dado encontrado para este email',
-          status: 'info',
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
-
-      const data = await response.json();
-      console.log('Dados do lead recebidos:', data);
-
-      // Preencher campos com dados do lead
-      if (data) {
-        setValue('nome', data.name || '');
-        setValue('whatsapp', data.phone || '');
-        setValue('estado', data.state || '');
+      if (leadData) {
+        // Preencher campos com dados do lead
+        setValue('nome', leadData.name || '');
+        setValue('whatsapp', leadData.phone || '');
+        setValue('estado', leadData.state || '');
         
         toast({
           title: '✅ Dados encontrados!',
-          description: `Lead "${data.name}" carregado automaticamente`,
+          description: `Lead "${leadData.name}" carregado automaticamente`,
           status: 'success',
           duration: 5000,
           isClosable: true,
         });
+        
+        console.log('Lead encontrado:', leadData);
+      } else {
+        toast({
+          title: 'Lead não encontrado',
+          description: 'Nenhum dado encontrado para este email',
+          status: 'info',
+          duration: 5000,
+          isClosable: true,
+        });
+        
+        console.log('Lead não encontrado para email:', email);
       }
 
     } catch (error) {
       console.error('Erro ao buscar lead:', error);
       toast({
         title: 'Erro ao buscar dados',
-        description: 'Não foi possível conectar com a API',
+        description: 'Erro interno na busca',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -271,6 +257,20 @@ export const Form: React.FC = () => {
           <Heading size="lg" textAlign="center" color="blue.600">Formulário de Inscrição</Heading>
           <Text textAlign="center" color="gray.600">Preencha o formulário abaixo para iniciar sua jornada conosco.</Text>
         </VStack>
+
+        {/* Status OAuth2 RD Station */}
+        <Box p={4} bg="yellow.50" borderRadius="md" border="1px solid" borderColor="yellow.200">
+          <VStack spacing={3} align="start">
+            <Text fontWeight="bold" color="yellow.800">🔗 Integração RD Station</Text>
+            <Text fontSize="sm" color="yellow.700">
+              ❌ OAuth2 não configurado. Para carregar dados automaticamente do RD Station, 
+              acesse <Text as="span" fontWeight="bold">/api/auth/authorize</Text>
+            </Text>
+            <Text fontSize="xs" color="yellow.600">
+              📧 Emails de teste disponíveis: teste@exemplo.com, lucasbarbosalacerda@gmail.com, maria@empresa.com.br, ana@consultoria.com
+            </Text>
+          </VStack>
+        </Box>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={6}>
