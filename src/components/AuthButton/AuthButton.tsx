@@ -1,76 +1,84 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Button, 
-  Text, 
-  VStack, 
-  Alert, 
-  AlertIcon,
-  useToast,
+import {
+  Button,
+  Text,
   Box
 } from '@chakra-ui/react';
 
+type AuthStatus = 'authenticated' | 'unauthenticated' | 'loading';
+
 export const AuthButton: React.FC = () => {
-  const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'not-authenticated'>('loading');
-  const toast = useToast();
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('loading');
 
   useEffect(() => {
+    // Verificar status de autenticação
+    const checkAuthStatus = () => {
+      const success = localStorage.getItem('rd_oauth_success');
+      const timestamp = localStorage.getItem('rd_oauth_timestamp');
+      
+      if (success && timestamp) {
+        const authTime = parseInt(timestamp);
+        const now = Date.now();
+        const hoursSinceAuth = (now - authTime) / (1000 * 60 * 60);
+        
+        if (hoursSinceAuth < 24) {
+          setAuthStatus('authenticated');
+        } else {
+          // Token expirado
+          localStorage.removeItem('rd_oauth_success');
+          localStorage.removeItem('rd_oauth_code');
+          localStorage.removeItem('rd_oauth_timestamp');
+          setAuthStatus('unauthenticated');
+        }
+      } else {
+        setAuthStatus('unauthenticated');
+      }
+    };
+
     checkAuthStatus();
   }, []);
 
-  const checkAuthStatus = async () => {
-    try {
-      const apiUrl = process.env.REACT_APP_API_URL || window.location.origin;
-      const response = await fetch(`${apiUrl}/api/auth/status`);
-      const data = await response.json();
-      
-      setAuthStatus(data.authenticated ? 'authenticated' : 'not-authenticated');
-    } catch (error) {
-      console.error('Erro ao verificar status:', error);
-      setAuthStatus('not-authenticated');
-    }
+  const handleAuth = () => {
+    window.location.href = '/api/auth/authorize';
   };
 
-  const handleAuth = () => {
-    const apiUrl = process.env.REACT_APP_API_URL || window.location.origin;
-    window.location.href = `${apiUrl}/api/auth/authorize`;
+  const handleDisconnect = () => {
+    localStorage.removeItem('rd_oauth_success');
+    localStorage.removeItem('rd_oauth_code');
+    localStorage.removeItem('rd_oauth_timestamp');
+    setAuthStatus('unauthenticated');
+    alert('Desconectado do RD Station');
   };
 
   if (authStatus === 'loading') {
     return (
-      <Box p={4} borderRadius="md" bg="gray.50">
-        <Text>Verificando status de autenticação...</Text>
+      <Box p={4} bg="gray.50" borderRadius="md">
+        <Text>Verificando status...</Text>
       </Box>
     );
   }
 
   if (authStatus === 'authenticated') {
     return (
-      <Alert status="success" borderRadius="md">
-        <AlertIcon />
-        <VStack align="start" spacing={1}>
-          <Text fontWeight="bold">✅ Conectado com RD Station</Text>
-          <Text fontSize="sm">O sistema pode buscar seus dados automaticamente</Text>
-        </VStack>
-      </Alert>
+      <Box p={4} bg="green.50" borderRadius="md" border="1px solid" borderColor="green.200">
+        <Text fontWeight="bold" color="green.700" mb={2}>✅ Conectado com RD Station</Text>
+        <Text fontSize="sm" color="green.600" mb={3}>O sistema pode buscar seus dados automaticamente</Text>
+        <Button onClick={handleDisconnect} size="sm" bg="red.500" color="white" _hover={{ bg: 'red.600' }}>
+          Desconectar
+        </Button>
+      </Box>
     );
   }
 
   return (
-    <Alert status="warning" borderRadius="md">
-      <AlertIcon />
-      <VStack align="start" spacing={3} w="full">
-        <Text fontWeight="bold">❌ Não autenticado</Text>
-        <Text fontSize="sm">
-          Para carregar seus dados automaticamente, conecte-se com o RD Station
-        </Text>
-        <Button 
-          colorScheme="blue" 
-          size="sm" 
-          onClick={handleAuth}
-        >
-          🔑 Conectar com RD Station
-        </Button>
-      </VStack>
-    </Alert>
+    <Box p={4} bg="yellow.50" borderRadius="md" border="1px solid" borderColor="yellow.200">
+      <Text fontWeight="bold" color="yellow.800" mb={2}>❌ Não autenticado</Text>
+      <Text fontSize="sm" color="yellow.700" mb={3}>
+        Para carregar seus dados automaticamente, conecte-se com o RD Station
+      </Text>
+      <Button onClick={handleAuth} bg="blue.500" color="white" _hover={{ bg: 'blue.600' }}>
+        🔗 Conectar com RD Station
+      </Button>
+    </Box>
   );
 }; 

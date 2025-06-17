@@ -3,7 +3,7 @@
 ## Substitua "SEU_USUARIO" pelo seu nome de usuário do GitHub
 
 # 1. Conectar ao repositório remoto (substitua SEU_USUARIO)
-git remote add origin https://github.com/SEU_USUARIO/form-rhema.git
+git remote add origin https://github.com/olucasdomkt/form-rhema.git
 
 # 2. Verificar se conectou
 git remote -v

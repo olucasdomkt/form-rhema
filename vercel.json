@@ -1,18 +1,4 @@
 {
-  "functions": {
-    "api/lead.js": {
-      "runtime": "@vercel/node"
-    },
-    "api/auth/status.js": {
-      "runtime": "@vercel/node"
-    },
-    "api/auth/authorize.js": {
-      "runtime": "@vercel/node"
-    },
-    "api/auth/callback.js": {
-      "runtime": "@vercel/node"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",

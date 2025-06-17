@@ -1,30 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import InputMask from 'react-input-mask';
 import {
   Box,
   Stack,
-  FormControl,
-  FormLabel,
   Input,
-  Select,
-  Radio,
-  RadioGroup,
   Textarea,
   Button,
-  useToast,
   Heading,
   Text,
-  Collapse,
-  SlideFade,
   SimpleGrid,
-  useColorModeValue,
   VStack,
   HStack,
-  useDisclosure,
 } from '@chakra-ui/react';
 import { estados } from '../../data/estados';
-import { mockLeads, findLeadByEmail } from '../../data/mockLeads';
 
 type FormData = {
   email: string;
@@ -45,19 +34,20 @@ type FormData = {
 };
 
 export const Form: React.FC = () => {
-  const toast = useToast();
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>();
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const { isOpen: isSearching, onOpen: startSearch, onClose: stopSearch } = useDisclosure();
+  const [isSearching, setIsSearching] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string>('');
 
   const graduacao = watch('graduacao');
   const inicioPos = watch('inicioPos');
-  const escolaridade = watch('escolaridade');
   const terminoGraduacao = watch('terminoGraduacao');
-  const indicacao = watch('indicacao');
 
-  const [selectedNps, setSelectedNps] = React.useState<number | undefined>(undefined);
+  const [selectedNps, setSelectedNps] = useState<number | undefined>(undefined);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setToastMessage(`${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'} ${message}`);
+    setTimeout(() => setToastMessage(''), 5000);
+  };
 
   const getNpsEmoji = (value: number) => {
     if (value >= 9) return '😊';
@@ -66,9 +56,9 @@ export const Form: React.FC = () => {
   };
 
   const getNpsColor = (value: number) => {
-    if (value >= 9) return 'green.500';
-    if (value >= 7) return 'yellow.500';
-    return 'red.500';
+    if (value >= 9) return '#48BB78';
+    if (value >= 7) return '#ED8936';
+    return '#F56565';
   };
 
   const getNpsLabel = (value: number) => {
@@ -84,14 +74,12 @@ export const Form: React.FC = () => {
   };
 
   const onSubmit = (data: FormData) => {
-    console.log('Form submitted:', data);
-    toast({
-      title: 'Formulário enviado!',
-      description: 'Em breve entraremos em contato.',
-      status: 'success',
-      duration: 5000,
-      isClosable: true,
-    });
+    const finalData = {
+      ...data,
+      indicacao: selectedNps || 5
+    };
+    console.log('📋 Dados do formulário completo:', finalData);
+    showToast('Formulário enviado! Em breve entraremos em contato.', 'success');
   };
 
   const handleNpsClick = (nota: number) => {
@@ -100,152 +88,91 @@ export const Form: React.FC = () => {
   };
 
   const searchLead = async (email: string) => {
+    if (!email || !email.includes('@')) return;
+
     try {
-      startSearch();
-      console.log('🔍 Iniciando busca de lead com email:', email);
-      console.log('📋 Todos os leads disponíveis:', mockLeads);
+      setIsSearching(true);
+      console.log('🔍 Buscando lead:', email);
       
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await fetch(`/api/lead?email=${encodeURIComponent(email)}`);
       
-      // Buscar lead nos dados locais
-      const leadData = findLeadByEmail(email);
-      console.log('🎯 Resultado da busca:', leadData);
-      console.log('🔍 Email sendo buscado (processado):', email.toLowerCase());
-      console.log('📧 Emails disponíveis:', mockLeads.map(lead => lead.email.toLowerCase()));
-      
-      if (leadData) {
-        // Preencher campos com dados do lead
-        setValue('nome', leadData.name || '');
-        setValue('whatsapp', leadData.phone || '');
-        setValue('estado', leadData.state || '');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Resposta da API:', data);
         
-        toast({
-          title: '✅ Dados encontrados!',
-          description: `Lead "${leadData.name}" carregado automaticamente`,
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        });
+        if (data.found && data.lead) {
+          const lead = data.lead;
+          
+          if (lead.name) setValue('nome', lead.name);
+          if (lead.phone) setValue('whatsapp', lead.phone);
+          if (lead.state) setValue('estado', lead.state);
+          
+          const sourceText = data.source === 'rd_station' ? 'RD Station' : 
+                            data.source === 'mock' ? 'dados de demonstração' : data.source;
+          
+          showToast(`Dados encontrados! Lead "${lead.name}" carregado de ${sourceText}`, 'success');
+          
+        } else {
+          console.log('❌ Lead não encontrado');
+          showToast('Nenhum dado encontrado para este email em nossa base', 'info');
+        }
         
-        console.log('✅ Lead encontrado e campos preenchidos:', leadData);
       } else {
-        toast({
-          title: 'Lead não encontrado',
-          description: `Nenhum dado encontrado para: ${email}`,
-          status: 'info',
-          duration: 5000,
-          isClosable: true,
-        });
+        const errorData = await response.json();
+        console.log('❌ Erro na busca:', errorData);
         
-        console.log('❌ Lead não encontrado para email:', email);
-        console.log('💡 Emails disponíveis para teste:', mockLeads.map(lead => lead.email));
+        if (response.status === 404) {
+          showToast('Email não encontrado em nossa base', 'info');
+        } else if (response.status === 401) {
+          showToast('Problema na conexão com RD Station. Verifique a integração.', 'warning');
+        } else {
+          showToast('Erro ao buscar dados do lead', 'error');
+        }
       }
 
     } catch (error) {
-      console.error('❌ Erro ao buscar lead:', error);
-      toast({
-        title: 'Erro ao buscar dados',
-        description: 'Erro interno na busca',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      console.error('❌ Erro na busca:', error);
+      showToast('Erro de conexão ao buscar dados', 'error');
     } finally {
-      stopSearch();
+      setIsSearching(false);
     }
   };
 
-  const handleEmailBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const email = e.target.value;
     if (email && email.includes('@')) {
-      await searchLead(email);
+      searchLead(email);
     }
   };
 
-  const renderEscolaridade = () => {
-    if (graduacao !== 'nao') return null;
-
-    return (
-      <SlideFade in={true} offsetY="20px">
-        <FormControl isRequired isInvalid={!!errors.escolaridade}>
-          <FormLabel>Minha escolaridade é:</FormLabel>
-          <Select {...register('escolaridade', { required: true })}>
-            <option value="">Selecione uma opção</option>
-            <option value="medio-incompleto">Ensino Médio Incompleto</option>
-            <option value="medio-completo">Ensino Médio Completo</option>
-            <option value="magisterio-incompleto">Magistério Incompleto</option>
-            <option value="magisterio-completo">Magistério Completo</option>
-            <option value="superior-incompleto">Superior incompleto</option>
-            <option value="superior-completo">Superior completo</option>
-            <option value="nenhuma">Nenhuma das opções acima</option>
-          </Select>
-        </FormControl>
-      </SlideFade>
-    );
+  const fieldStyle = {
+    marginBottom: '1.5rem'
   };
 
-  const renderTerminoGraduacao = () => {
-    if (graduacao !== 'sim') return null;
-
-    return (
-      <SlideFade in={true} offsetY="20px">
-        <FormControl isRequired isInvalid={!!errors.terminoGraduacao}>
-          <FormLabel>Quando você concluiu sua graduação?</FormLabel>
-          <Select {...register('terminoGraduacao', { required: true })}>
-            <option value="">Selecione uma opção</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
-            <option value="2020">2020</option>
-            <option value="2019">2019</option>
-            <option value="2018">2018</option>
-            <option value="antes-2018">Antes de 2018</option>
-          </Select>
-        </FormControl>
-      </SlideFade>
-    );
+  const labelStyle = {
+    display: 'block',
+    fontWeight: 'bold',
+    marginBottom: '0.5rem',
+    color: '#2D3748'
   };
 
-  const renderInicioPos = () => {
-    if (graduacao !== 'sim' || terminoGraduacao !== '2024') return null;
-
-    return (
-      <SlideFade in={true} offsetY="20px">
-        <FormControl isRequired isInvalid={!!errors.inicioPos}>
-          <FormLabel>Quando pretende iniciar uma pós-graduação?</FormLabel>
-          <Select {...register('inicioPos', { required: true })}>
-            <option value="">Selecione uma opção</option>
-            <option value="2025-1">1º semestre de 2025</option>
-            <option value="2025-2">2º semestre de 2025</option>
-            <option value="2026">2026</option>
-            <option value="depois-2026">Depois de 2026</option>
-            <option value="nao-pretendo">Não pretendo fazer pós-graduação</option>
-          </Select>
-        </FormControl>
-      </SlideFade>
-    );
+  const inputStyle = {
+    width: '100%',
+    padding: '12px 16px',
+    border: '2px solid #E2E8F0',
+    borderRadius: '8px',
+    fontSize: '16px',
+    backgroundColor: 'white'
   };
 
-  const renderMotivoSemInteresse = () => {
-    if (graduacao !== 'sim' || terminoGraduacao !== '2024' || inicioPos !== 'nao-pretendo') return null;
+  const errorStyle = {
+    color: '#E53E3E',
+    fontSize: '14px',
+    marginTop: '4px'
+  };
 
-    return (
-      <SlideFade in={true} offsetY="20px">
-        <FormControl isRequired isInvalid={!!errors.motivoSemInteresse}>
-          <FormLabel>Por que não pretende fazer pós-graduação?</FormLabel>
-          <Select {...register('motivoSemInteresse', { required: true })}>
-            <option value="">Selecione uma opção</option>
-            <option value="financeiro">Motivos financeiros</option>
-            <option value="tempo">Falta de tempo</option>
-            <option value="area-diferente">Quero mudar de área</option>
-            <option value="satisfeito">Estou satisfeito com minha formação atual</option>
-            <option value="outros">Outros motivos</option>
-          </Select>
-        </FormControl>
-      </SlideFade>
-    );
+  const radioStyle = {
+    margin: '8px 0'
   };
 
   return (
@@ -253,73 +180,125 @@ export const Form: React.FC = () => {
       p={8} 
       maxWidth="800px" 
       margin="0 auto"
-      bg={bgColor}
+      bg="white"
       borderRadius="xl"
       boxShadow="xl"
+      minH="100vh"
     >
-      <Stack spacing={8}>
-        <VStack spacing={4}>
-          <Heading size="lg" textAlign="center" color="blue.600">Formulário de Inscrição</Heading>
+      <Stack gap={8}>
+        <VStack gap={4}>
+          <Heading size="lg" textAlign="center" color="blue.600">📝 Formulário de Inscrição</Heading>
           <Text textAlign="center" color="gray.600">Preencha o formulário abaixo para iniciar sua jornada conosco.</Text>
         </VStack>
 
-        {/* Status OAuth2 RD Station */}
-        <Box p={4} bg="yellow.50" borderRadius="md" border="1px solid" borderColor="yellow.200">
+        {/* Toast personalizado */}
+        {toastMessage && (
+          <Box 
+            p={4} 
+            bg="blue.50" 
+            borderRadius="md" 
+            border="1px solid" 
+            borderColor="blue.200"
+            textAlign="center"
+          >
+            <Text color="blue.800">{toastMessage}</Text>
+          </Box>
+        )}
+
+        {/* Info sobre integração RD Station */}
+        <Box p={4} bg="blue.50" borderRadius="md" border="1px solid" borderColor="blue.200">
           <VStack spacing={3} align="start">
-            <Text fontWeight="bold" color="yellow.800">🔗 Integração RD Station</Text>
-            <Text fontSize="sm" color="yellow.700">
-              ❌ OAuth2 não configurado. Para carregar dados automaticamente do RD Station, 
-              acesse <Text as="span" fontWeight="bold">/api/auth/authorize</Text>
+            <Text fontWeight="bold" color="blue.800">🔗 Integração RD Station</Text>
+            <Text fontSize="sm" color="blue.700">
+              Sistema configurado para buscar dados automaticamente. Digite seu email e aguarde a busca.
             </Text>
-            <Text fontSize="xs" color="yellow.600">
-              📧 Emails de teste disponíveis: teste@exemplo.com, lucasbarbosalacerda@gmail.com, maria@empresa.com.br, ana@consultoria.com
+            <Text fontSize="xs" color="blue.600">
+              📧 Emails de teste: teste@exemplo.com, maria@empresa.com.br
             </Text>
+            <Button 
+              size="sm" 
+              colorScheme="blue" 
+              variant="outline"
+              onClick={() => window.open('/admin', '_blank')}
+            >
+              ⚙️ Configurar RD Station
+            </Button>
           </VStack>
         </Box>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={6}>
             {/* Email */}
-            <FormControl isRequired isInvalid={!!errors.email}>
-              <FormLabel>Seu melhor e-mail</FormLabel>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>📧 Seu melhor e-mail *</label>
               <Input
                 type="email"
-                {...register('email', { required: true })}
+                {...register('email', { 
+                  required: 'Email é obrigatório',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Digite um email válido'
+                  }
+                })}
                 placeholder="seu@email.com"
                 onBlur={handleEmailBlur}
                 isDisabled={isSearching}
+                size="lg"
               />
               {isSearching && (
                 <Text fontSize="sm" color="blue.500" mt={1}>
-                  Buscando seus dados...
+                  🔍 Buscando seus dados...
                 </Text>
               )}
-            </FormControl>
+              {errors.email && (
+                <div style={errorStyle}>
+                  {errors.email.message}
+                </div>
+              )}
+            </div>
 
             {/* Nome */}
-            <FormControl isRequired isInvalid={!!errors.nome}>
-              <FormLabel>Nome completo</FormLabel>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>👤 Nome completo *</label>
               <Input
-                {...register('nome', { required: true })}
+                {...register('nome', { 
+                  required: 'Nome é obrigatório',
+                  minLength: { value: 2, message: 'Nome deve ter pelo menos 2 caracteres' }
+                })}
                 placeholder="Seu nome completo"
+                size="lg"
               />
-            </FormControl>
+              {errors.nome && (
+                <div style={errorStyle}>
+                  {errors.nome.message}
+                </div>
+              )}
+            </div>
 
             {/* WhatsApp */}
-            <FormControl isRequired isInvalid={!!errors.whatsapp}>
-              <FormLabel>Seu WhatsApp</FormLabel>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>📱 Seu WhatsApp *</label>
               <Input
                 as={InputMask}
                 mask="(99) 99999-9999"
-                {...register('whatsapp', { required: true })}
+                {...register('whatsapp', { required: 'WhatsApp é obrigatório' })}
                 placeholder="(00) 00000-0000"
+                size="lg"
               />
-            </FormControl>
+              {errors.whatsapp && (
+                <div style={errorStyle}>
+                  {errors.whatsapp.message}
+                </div>
+              )}
+            </div>
 
             {/* Faixa Etária */}
-            <FormControl isRequired isInvalid={!!errors.faixaEtaria}>
-              <FormLabel>Qual a sua faixa etária?</FormLabel>
-              <Select {...register('faixaEtaria', { required: true })}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>🎂 Qual a sua faixa etária? *</label>
+              <select 
+                {...register('faixaEtaria', { required: 'Selecione sua faixa etária' })}
+                style={{...inputStyle, borderColor: errors.faixaEtaria ? '#E53E3E' : '#E2E8F0'}}
+              >
                 <option value="">Selecione uma opção</option>
                 <option value="18-24">De 18 a 24 anos</option>
                 <option value="25-30">De 25 a 30 anos</option>
@@ -329,103 +308,317 @@ export const Form: React.FC = () => {
                 <option value="46-50">De 45 a 50 anos</option>
                 <option value="51-55">De 51 a 55 anos</option>
                 <option value="56+">56 anos ou mais</option>
-              </Select>
-            </FormControl>
+              </select>
+              {errors.faixaEtaria && (
+                <div style={errorStyle}>
+                  {errors.faixaEtaria.message}
+                </div>
+              )}
+            </div>
 
             {/* Estado */}
-            <FormControl isRequired isInvalid={!!errors.estado}>
-              <FormLabel>Em qual estado você mora?</FormLabel>
-              <Select {...register('estado', { required: true })}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>📍 Em qual estado você mora? *</label>
+              <select 
+                {...register('estado', { required: 'Selecione seu estado' })}
+                style={{...inputStyle, borderColor: errors.estado ? '#E53E3E' : '#E2E8F0'}}
+              >
                 <option value="">Selecione um estado</option>
                 {estados.map((estado) => (
                   <option key={estado.sigla} value={estado.sigla}>
                     {estado.nome}
                   </option>
                 ))}
-              </Select>
-            </FormControl>
+              </select>
+              {errors.estado && (
+                <div style={errorStyle}>
+                  {errors.estado.message}
+                </div>
+              )}
+            </div>
 
             {/* Graduação */}
-            <FormControl isRequired isInvalid={!!errors.graduacao}>
-              <FormLabel>Você já é graduado(a)?</FormLabel>
-              <RadioGroup>
-                <Stack>
-                  <Radio value="nao" {...register('graduacao', { required: true })}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>🎓 Você já é graduado(a)? *</label>
+              <div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="nao" 
+                    {...register('graduacao', { required: 'Selecione uma opção' })}
+                    id="grad-nao"
+                  />
+                  <label htmlFor="grad-nao" style={{marginLeft: '8px'}}>
                     Não (ainda não fiz e nem comecei)
-                  </Radio>
-                  <Radio value="incompleto" {...register('graduacao', { required: true })}>
+                  </label>
+                </div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="incompleto" 
+                    {...register('graduacao', { required: 'Selecione uma opção' })}
+                    id="grad-incompleto"
+                  />
+                  <label htmlFor="grad-incompleto" style={{marginLeft: '8px'}}>
                     Incompleto (estou cursando graduação)
-                  </Radio>
-                  <Radio value="sim" {...register('graduacao', { required: true })}>
-                    Sim (superior completo, já concluiu)
-                  </Radio>
-                </Stack>
-              </RadioGroup>
-            </FormControl>
+                  </label>
+                </div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="sim" 
+                    {...register('graduacao', { required: 'Selecione uma opção' })}
+                    id="grad-sim"
+                  />
+                  <label htmlFor="grad-sim" style={{marginLeft: '8px'}}>
+                    Sim (superior completo, já concluí)
+                  </label>
+                </div>
+              </div>
+              {errors.graduacao && (
+                <div style={errorStyle}>
+                  {errors.graduacao.message}
+                </div>
+              )}
+            </div>
 
-            {/* Campos condicionais */}
-            {renderEscolaridade()}
-            {renderTerminoGraduacao()}
-            {renderInicioPos()}
-            {renderMotivoSemInteresse()}
+            {/* Escolaridade - Condicional */}
+            {graduacao === 'nao' && (
+              <div style={fieldStyle}>
+                <label style={labelStyle}>📚 Minha escolaridade é: *</label>
+                <select 
+                  {...register('escolaridade', { required: 'Selecione uma opção' })}
+                  style={{...inputStyle, borderColor: errors.escolaridade ? '#E53E3E' : '#E2E8F0'}}
+                >
+                  <option value="">Selecione uma opção</option>
+                  <option value="medio-incompleto">Ensino Médio Incompleto</option>
+                  <option value="medio-completo">Ensino Médio Completo</option>
+                  <option value="magisterio-incompleto">Magistério Incompleto</option>
+                  <option value="magisterio-completo">Magistério Completo</option>
+                  <option value="superior-incompleto">Superior incompleto</option>
+                  <option value="superior-completo">Superior completo</option>
+                  <option value="nenhuma">Nenhuma das opções acima</option>
+                </select>
+                {errors.escolaridade && (
+                  <div style={errorStyle}>
+                    {errors.escolaridade.message}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Término Graduação - Condicional */}
+            {graduacao === 'sim' && (
+              <div style={fieldStyle}>
+                <label style={labelStyle}>📅 Quando você concluiu sua graduação? *</label>
+                <select 
+                  {...register('terminoGraduacao', { required: 'Selecione uma opção' })}
+                  style={{...inputStyle, borderColor: errors.terminoGraduacao ? '#E53E3E' : '#E2E8F0'}}
+                >
+                  <option value="">Selecione uma opção</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                  <option value="2022">2022</option>
+                  <option value="2021">2021</option>
+                  <option value="2020">2020</option>
+                  <option value="2019">2019</option>
+                  <option value="2018">2018</option>
+                  <option value="antes-2018">Antes de 2018</option>
+                </select>
+                {errors.terminoGraduacao && (
+                  <div style={errorStyle}>
+                    {errors.terminoGraduacao.message}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Início Pós - Condicional */}
+            {graduacao === 'sim' && terminoGraduacao === '2024' && (
+              <div style={fieldStyle}>
+                <label style={labelStyle}>🎯 Quando pretende iniciar uma pós-graduação? *</label>
+                <select 
+                  {...register('inicioPos', { required: 'Selecione uma opção' })}
+                  style={{...inputStyle, borderColor: errors.inicioPos ? '#E53E3E' : '#E2E8F0'}}
+                >
+                  <option value="">Selecione uma opção</option>
+                  <option value="2025-1">1º semestre de 2025</option>
+                  <option value="2025-2">2º semestre de 2025</option>
+                  <option value="2026">2026</option>
+                  <option value="depois-2026">Depois de 2026</option>
+                  <option value="nao-pretendo">Não pretendo fazer pós-graduação</option>
+                </select>
+                {errors.inicioPos && (
+                  <div style={errorStyle}>
+                    {errors.inicioPos.message}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Motivo sem interesse - Condicional */}
+            {graduacao === 'sim' && terminoGraduacao === '2024' && inicioPos === 'nao-pretendo' && (
+              <div style={fieldStyle}>
+                <label style={labelStyle}>🤔 Por que não pretende fazer pós-graduação? *</label>
+                <select 
+                  {...register('motivoSemInteresse', { required: 'Selecione uma opção' })}
+                  style={{...inputStyle, borderColor: errors.motivoSemInteresse ? '#E53E3E' : '#E2E8F0'}}
+                >
+                  <option value="">Selecione uma opção</option>
+                  <option value="financeiro">Motivos financeiros</option>
+                  <option value="tempo">Falta de tempo</option>
+                  <option value="area-diferente">Quero mudar de área</option>
+                  <option value="satisfeito">Estou satisfeito com minha formação atual</option>
+                  <option value="outros">Outros motivos</option>
+                </select>
+                {errors.motivoSemInteresse && (
+                  <div style={errorStyle}>
+                    {errors.motivoSemInteresse.message}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Clube Rhema+ */}
-            <FormControl isRequired isInvalid={!!errors.clubeRhema}>
-              <FormLabel>Quer conhecer o Clube Rhema+?</FormLabel>
-              <RadioGroup>
-                <Stack>
-                  <Radio value="saber-mais" {...register('clubeRhema', { required: true })}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>🏆 Quer conhecer o Clube Rhema+? *</label>
+              <div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="saber-mais" 
+                    {...register('clubeRhema', { required: 'Selecione uma opção' })}
+                    id="clube-saber"
+                  />
+                  <label htmlFor="clube-saber" style={{marginLeft: '8px'}}>
                     Quero saber mais
-                  </Radio>
-                  <Radio value="ja-conheco" {...register('clubeRhema', { required: true })}>
+                  </label>
+                </div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="ja-conheco" 
+                    {...register('clubeRhema', { required: 'Selecione uma opção' })}
+                    id="clube-conheco"
+                  />
+                  <label htmlFor="clube-conheco" style={{marginLeft: '8px'}}>
                     Já conheço
-                  </Radio>
-                  <Radio value="sem-interesse" {...register('clubeRhema', { required: true })}>
+                  </label>
+                </div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="sem-interesse" 
+                    {...register('clubeRhema', { required: 'Selecione uma opção' })}
+                    id="clube-sem"
+                  />
+                  <label htmlFor="clube-sem" style={{marginLeft: '8px'}}>
                     Não tenho interesse
-                  </Radio>
-                </Stack>
-              </RadioGroup>
-            </FormControl>
+                  </label>
+                </div>
+              </div>
+              {errors.clubeRhema && (
+                <div style={errorStyle}>
+                  {errors.clubeRhema.message}
+                </div>
+              )}
+            </div>
 
             {/* Cursos Online */}
-            <FormControl isRequired isInvalid={!!errors.cursosOnline}>
-              <FormLabel>Quer conhecer nossos cursos de capacitação online?</FormLabel>
-              <RadioGroup>
-                <Stack>
-                  <Radio value="saber-mais" {...register('cursosOnline', { required: true })}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>💻 Quer conhecer nossos cursos de capacitação online? *</label>
+              <div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="saber-mais" 
+                    {...register('cursosOnline', { required: 'Selecione uma opção' })}
+                    id="cursos-saber"
+                  />
+                  <label htmlFor="cursos-saber" style={{marginLeft: '8px'}}>
                     Quero saber mais
-                  </Radio>
-                  <Radio value="ja-conheco" {...register('cursosOnline', { required: true })}>
+                  </label>
+                </div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="ja-conheco" 
+                    {...register('cursosOnline', { required: 'Selecione uma opção' })}
+                    id="cursos-conheco"
+                  />
+                  <label htmlFor="cursos-conheco" style={{marginLeft: '8px'}}>
                     Já conheço
-                  </Radio>
-                  <Radio value="sem-interesse" {...register('cursosOnline', { required: true })}>
+                  </label>
+                </div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="sem-interesse" 
+                    {...register('cursosOnline', { required: 'Selecione uma opção' })}
+                    id="cursos-sem"
+                  />
+                  <label htmlFor="cursos-sem" style={{marginLeft: '8px'}}>
                     Não tenho interesse
-                  </Radio>
-                </Stack>
-              </RadioGroup>
-            </FormControl>
+                  </label>
+                </div>
+              </div>
+              {errors.cursosOnline && (
+                <div style={errorStyle}>
+                  {errors.cursosOnline.message}
+                </div>
+              )}
+            </div>
 
             {/* Psicopedagogo */}
-            <FormControl isRequired isInvalid={!!errors.psicopedagogo}>
-              <FormLabel>Você é psicopedagogo clínico ou neuropsicopedagogo clínico?</FormLabel>
-              <RadioGroup>
-                <Stack>
-                  <Radio value="sim-info" {...register('psicopedagogo', { required: true })}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>🧠 Você é psicopedagogo clínico ou neuropsicopedagogo clínico? *</label>
+              <div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="sim-info" 
+                    {...register('psicopedagogo', { required: 'Selecione uma opção' })}
+                    id="psico-sim"
+                  />
+                  <label htmlFor="psico-sim" style={{marginLeft: '8px'}}>
                     Sim, sou – me mande mais informações
-                  </Radio>
-                  <Radio value="especializacao" {...register('psicopedagogo', { required: true })}>
+                  </label>
+                </div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="especializacao" 
+                    {...register('psicopedagogo', { required: 'Selecione uma opção' })}
+                    id="psico-esp"
+                  />
+                  <label htmlFor="psico-esp" style={{marginLeft: '8px'}}>
                     Tenho a especialização, mas no momento não tenho interesse
-                  </Radio>
-                  <Radio value="nao" {...register('psicopedagogo', { required: true })}>
+                  </label>
+                </div>
+                <div style={radioStyle}>
+                  <input 
+                    type="radio" 
+                    value="nao" 
+                    {...register('psicopedagogo', { required: 'Selecione uma opção' })}
+                    id="psico-nao"
+                  />
+                  <label htmlFor="psico-nao" style={{marginLeft: '8px'}}>
                     Não sou dessa área
-                  </Radio>
-                </Stack>
-              </RadioGroup>
-            </FormControl>
+                  </label>
+                </div>
+              </div>
+              {errors.psicopedagogo && (
+                <div style={errorStyle}>
+                  {errors.psicopedagogo.message}
+                </div>
+              )}
+            </div>
 
             {/* NPS */}
-            <FormControl isRequired isInvalid={!!errors.indicacao}>
-              <FormLabel fontSize="lg" color="blue.600">De 0 a 10, quanto você indicaria nossos eventos para um amigo?</FormLabel>
+            <div style={fieldStyle}>
+              <label style={{...labelStyle, fontSize: '18px', color: '#3182CE'}}>
+                ⭐ De 0 a 10, quanto você indicaria nossos eventos para um amigo? *
+              </label>
               <Text fontSize="sm" color="gray.600" mb={4}>
                 0 significa que você não indicaria de jeito nenhum, e 10 significa que você indicaria com certeza.
               </Text>
@@ -439,8 +632,9 @@ export const Form: React.FC = () => {
                     <Button
                       key={nota}
                       type="button"
-                      colorScheme={selectedNps === nota ? getNpsColor(nota) : 'gray'}
-                      variant={selectedNps === nota ? 'solid' : 'outline'}
+                      bg={selectedNps === nota ? getNpsColor(nota) : '#F7FAFC'}
+                      color={selectedNps === nota ? 'white' : '#4A5568'}
+                      border={selectedNps === nota ? 'none' : '2px solid #E2E8F0'}
                       onClick={() => handleNpsClick(nota)}
                       _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
                       transition="all 0.2s"
@@ -448,13 +642,6 @@ export const Form: React.FC = () => {
                       minWidth={["35px", "40px", "40px"]}
                       p={0}
                       fontSize={["sm", "md", "md"]}
-                      bg={selectedNps === nota ? `${getNpsColor(nota)}` : undefined}
-                      color={selectedNps === nota ? 'white' : undefined}
-                      _active={{
-                        bg: `${getNpsColor(nota)}`,
-                        color: 'white',
-                        transform: 'scale(0.95)'
-                      }}
                     >
                       {nota}
                     </Button>
@@ -481,19 +668,33 @@ export const Form: React.FC = () => {
                   </Box>
                 )}
               </VStack>
-            </FormControl>
+              {errors.indicacao && (
+                <div style={errorStyle}>
+                  Selecione uma nota de 0 a 10
+                </div>
+              )}
+            </div>
 
             {/* Dificuldade */}
-            <FormControl isRequired isInvalid={!!errors.dificuldade}>
-              <FormLabel fontSize="lg" color="blue.600">Qual sua maior dificuldade em sala de aula?</FormLabel>
+            <div style={fieldStyle}>
+              <label style={{...labelStyle, fontSize: '18px', color: '#3182CE'}}>
+                📚 Qual sua maior dificuldade em sala de aula? *
+              </label>
               <Textarea
-                {...register('dificuldade', { required: true })}
+                {...register('dificuldade', { required: 'Descreva sua maior dificuldade' })}
                 placeholder="Descreva sua maior dificuldade..."
                 size="lg"
-                _hover={{ borderColor: 'blue.400' }}
-                _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)' }}
+                rows={4}
+                borderColor={errors.dificuldade ? '#E53E3E' : '#E2E8F0'}
+                _hover={{ borderColor: '#4299E1' }}
+                _focus={{ borderColor: '#3182CE', boxShadow: '0 0 0 1px #3182CE' }}
               />
-            </FormControl>
+              {errors.dificuldade && (
+                <div style={errorStyle}>
+                  {errors.dificuldade.message}
+                </div>
+              )}
+            </div>
 
             <Button
               type="submit"
@@ -503,8 +704,10 @@ export const Form: React.FC = () => {
               _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
               transition="all 0.2s"
               mt={8}
+              fontSize="lg"
+              py={6}
             >
-              Enviar Formulário
+              🚀 Enviar Formulário
             </Button>
           </Stack>
         </form>
