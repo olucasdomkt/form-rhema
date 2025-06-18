@@ -207,7 +207,7 @@ export const Form: React.FC = () => {
 
         {/* Info sobre integração RD Station */}
         <Box p={4} bg="blue.50" borderRadius="md" border="1px solid" borderColor="blue.200">
-          <VStack spacing={3} align="start">
+          <VStack gap={3} align="start">
             <Text fontWeight="bold" color="blue.800">🔗 Integração RD Station</Text>
             <Text fontSize="sm" color="blue.700">
               Sistema configurado para buscar dados automaticamente. Digite seu email e aguarde a busca.
@@ -227,7 +227,7 @@ export const Form: React.FC = () => {
         </Box>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Stack spacing={6}>
+          <Stack gap={6}>
             {/* Email */}
             <div style={fieldStyle}>
               <label style={labelStyle}>📧 Seu melhor e-mail *</label>
@@ -242,7 +242,7 @@ export const Form: React.FC = () => {
                 })}
                 placeholder="seu@email.com"
                 onBlur={handleEmailBlur}
-                isDisabled={isSearching}
+                disabled={isSearching}
                 size="lg"
               />
               {isSearching && (
@@ -622,12 +622,12 @@ export const Form: React.FC = () => {
               <Text fontSize="sm" color="gray.600" mb={4}>
                 0 significa que você não indicaria de jeito nenhum, e 10 significa que você indicaria com certeza.
               </Text>
-              <VStack spacing={4} align="stretch">
-                <SimpleGrid 
-                  columns={[6, 6, 11]} 
-                  spacing={[1, 2, 2]}
-                  mb={2}
-                >
+                             <VStack gap={4} align="stretch">
+                 <SimpleGrid 
+                   columns={[6, 6, 11]} 
+                   gap={[1, 2, 2]}
+                   mb={2}
+                 >
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((nota) => (
                     <Button
                       key={nota}
@@ -656,7 +656,7 @@ export const Form: React.FC = () => {
                     textAlign="center"
                     mt={2}
                   >
-                    <HStack spacing={2} justify="center" mb={2}>
+                                         <HStack gap={2} justify="center" mb={2}>
                       <Text fontSize={["xl", "2xl", "2xl"]}>{getNpsEmoji(selectedNps)}</Text>
                       <Text fontWeight="bold" fontSize={["md", "lg", "lg"]}>
                         {getNpsLabel(selectedNps)}
