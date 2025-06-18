@@ -12,7 +12,27 @@ export default function handler(req, res) {
   }
 
   // Configurações OAuth2 RD Station - USAR VARIÁVEIS DE AMBIENTE EM PRODUÇÃO
-  const RD_CLIENT_ID = process.env.RD_CLIENT_ID || 'a0d1c3dc-2b96-4c13-8809-32c7316901e2';
+  const RD_CLIENT_ID = process.env.RD_CLIENT_ID;
+
+// Validar se a variável de ambiente está configurada
+if (!RD_CLIENT_ID) {
+  console.error('❌ Variável de ambiente RD_CLIENT_ID é obrigatória');
+  return res.status(500).send(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <title>Erro de Configuração</title>
+      <style>body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }</style>
+    </head>
+    <body>
+      <h1>❌ Erro de Configuração</h1>
+      <p>As credenciais RD Station não estão configuradas no servidor.</p>
+      <p>Configure a variável de ambiente RD_CLIENT_ID.</p>
+    </body>
+    </html>
+  `);
+}
   
   // Construir URL de redirecionamento baseada no host atual
   const protocol = req.headers['x-forwarded-proto'] || 'https';
